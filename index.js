@@ -5,8 +5,8 @@ const ValidTypes = {
 }
 
 const checkMsg = (v, stdMsg) => {
-    if (v.message) {
-        return v.message;
+    if (v._message) {
+        return v._message;
     }
     return stdMsg;
 }
@@ -23,13 +23,13 @@ let Validator = function () {
 
     const Validators = {
         "int": (v) => {
-			let has = false;
+            let has = false;
             if (!/[0-9]+/.test(v.value.toString())) {
-                return [checkMsg(v, `Parameter ${v.name} must be int, but ${v.value} found`)];				
+                return [checkMsg(v, `Parameter ${v.name} must be int, but ${v.value} found`)];
             }
-			v.value = parseInt(v.value);
+            v.value = parseInt(v.value);
             if (v._unsigned && v.value < 0) {
-                return [checkMsg(v, `Parameter ${v.name} must be unsigned, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.name} must be unsigned int, but ${v.value} found`)];
             }
             if (v._min && v.value < v._min) {
                 return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min}, but ${v.value} found`)];
@@ -40,16 +40,17 @@ let Validator = function () {
             return [null, v.value];
         },
         "float": (v) => {
-            if (!/[+-]?([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
+            if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.name} must be float, but ${v.value} found`)];
             }
+            v.value = parseFloat(v.value);
             if (v._min && v.value < v._min) {
                 return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min}, but ${v.value} found`)];
             }
             if (v._max && v.value > v._max) {
                 return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max}, but ${v.value} found`)];
             }
-            return [null, parseFloat(v.value)];
+            return [null, v.value];
         },
         "string": (v) => {
             let val = v.value.toString();
@@ -64,19 +65,29 @@ let Validator = function () {
             }
             return [null, val];
         },
-		"bool": (v) => {
-			switch (typeof(v.value)) {
-			case "boolean":
-				return [null, v.value];
-				break;
-			case "string":
-				let flags = v._strict ? "" : "i";				
-				if (new RegExp("^(true|false)$", flags).test(v.value)) {
-					return [null, JSON.parse(v.value.toLowerCase())];
-				}
-				break;
+        "bool": (v) => {
+            switch (typeof(v.value)) {
+            case "boolean":
+                return [null, v.value];
+                break;
+            case "string":
+                let flags = v._strict ? "" : "i";
+                if (new RegExp("^(true|false)$", flags).test(v.value)) {
+                    return [null, JSON.parse(v.value.toLowerCase())];
+                }
+                break;
+            }
+            return [checkMsg(v, `Parameter ${v.name} must be boolean, hence true or false, but ${v.value} found`)];
+        },
+		"func": (v) => {
+			if (!v._operator) {
+				return [checkMsg(v, `Parameter ${v.name} has functional validator, but no functions found`)];
 			}
-			return [checkMsg(v, `Parameter ${v.name} must be boolean, hence true or false, but ${v.value} found`)];
+			const res = v._operator(v.value);
+			if (res) {
+				return [null, v.value];
+			}
+			return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
 		}
     };
 
@@ -87,7 +98,7 @@ let Validator = function () {
     //Current source. If defined, then arg1 will use _curSrc.
     self._curSrc = null;
     self.errs = [];
-	self.options = {};
+    self.options = {};
 
     self.arg1 = (name) => {
         if (self._curSrc === null) {
@@ -161,7 +172,7 @@ let Validator = function () {
         if (v.type === null) {
             throw new TypeError("Can not validate untyped argument");
         }
-		let err, result;
+        let err, result;
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
                 if (v._default != undefined && v._default !== null) {
@@ -170,44 +181,48 @@ let Validator = function () {
             }
             [err, result] = Validators[v.type](v);
         } else {
-			if (v.value === null || v.value === undefined) {
-				err = `Parameter ${v.name} required, but nothing found`;
-			} else {
-				[err, result] = Validators[v.type](v);
-			}
-		}
-		if (err !== null) {
-			self.errs.push(err);
-		}
-		if (result !== null) {
-			self.options[v.name] = result;
-		}
+            if (v.value === null || v.value === undefined) {
+                err = `Parameter ${v.name} required, but nothing found`;
+            } else {
+                [err, result] = Validators[v.type](v);
+            }
+        }
+        if (err !== null) {
+            self.errs.push(err);
+        }
+        if (result !== null) {
+            self.options[v.name] = result;
+        }
     };
 }
 
 let Variable = function (parent, name, value) {
     let self = this;
 
-    self.parent = parent;
-    self.name   = name;
-    self.value  = value;
-    self.type   = null;
-	
-	/*
-	self._min = null;
-	self._max = null;
-	self._unsigned = null;
-	self._trim = null;
-	self._strict = null;
-	*/
+    self.parent  = parent;
+    self.name    = name;
+    self.value   = value;
+    self.type    = null;
+	self.message = null;
+
+    /*
+	self._message = undefined;
+    self._min = undefined;
+    self._max = undefined;
+    self._unsigned = undefined;
+    self._trim = undefined;
+    self._strict = undefined;
+    self._default = undefined;
+    self._operator = undefined;
+    */
 
     self.arg = self.parent.arg;
 
     self.build = () => {
         return self.parent.build();
     }
-	
-	self.with = self.parent.with;
+
+    self.with = self.parent.with;
 
     self.trace = () => {
         self.parent.trace();
@@ -215,10 +230,17 @@ let Variable = function (parent, name, value) {
     }
 
     self.ofType = (typeName) => {
-        switch (typeName.toLowerCase()) {
-            case "int": case "string": case "float": case "datetime": case "date": case "time": case "bool": case "regexp":
-                self.type = typeName;
-                return self;
+        if (typeof(typeName) === 'string') {
+            switch (typeName.toLowerCase()) {
+                case "int": case "string": case "float": case "datetime": case "date": case "time": case "bool": case "regexp": case "func":
+                    self.type = typeName;
+                    return self;
+            }
+        }
+        if (typeof(typeName) === 'function') {
+            self.type = "func";
+            self._operator = typeName;
+            return self;
         }
         throw new TypeError(`Variable.ofType error [005]. type name ${typeName} not defined. Use int, string, float, datetime. date, time, bool, regexp`);
     }
@@ -241,23 +263,30 @@ let Variable = function (parent, name, value) {
             return self;
         }
     });
-	["trim", "unsigned", "strict"].forEach(name => {
-		Object.defineProperty(self, name, {
-			get: () => {
-				self[`_${name}`] = true;
-				return self;
-			}
-		});
-	});
-	
+    ["trim", "unsigned", "strict"].forEach(name => {
+        Object.defineProperty(self, name, {
+            get: () => {
+                self[`_${name}`] = true;
+                return self;
+            }
+        });
+    });
+	self.message = (value) => {
+		self._message = value;
+		return self;
+	};
+    self.operator = (value) => {
+        self._operator = value;
+        return self;
+    };
     self.default = (value) => {
         self._default = value;
         return self;
     };
     self.between = (a, b) => {
-		if (a >= b) {
-			throw new TypeError(`Variable option 'between' error: first argument must be less than second argument, but ${a}, ${b} found`);
-		}
+        if (a >= b) {
+            throw new TypeError(`Variable option 'between' error: first argument must be less than second argument, but ${a}, ${b} found`);
+        }
         [self._min, self._max] = [a, b];
         return self;
     };
