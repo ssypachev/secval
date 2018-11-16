@@ -15,6 +15,18 @@ describe("Should test float validator", () => {
 		chai.expect(options.a).to.equal(12.34);
 	});
 	
+	it ("Should test simple float alias", () => { 
+		let arg = {
+			a: 12.34
+		};
+		let [err, options] = new Validator().with(arg)
+		.arg("a").required.float.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.equal(12.34);
+	});
+	
 	it ("Should test string simple float", () => { 
 		let arg = {
 			a: "12.34"

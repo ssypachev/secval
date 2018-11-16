@@ -6,7 +6,7 @@ const checkMsg = (v, stdMsg) => {
 }
 
 let globalOptions = {
-	separator: ", "
+    separator: ", "
 };
 
 /**
@@ -21,7 +21,6 @@ let Validator = function () {
 
     const Validators = {
         int (v) {
-            let has = false;
             if (!/[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.name} must be int, but ${v.value} found`)];
             }
@@ -88,6 +87,7 @@ let Validator = function () {
             return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
         }
     };
+    self.Validators = Validators;
 
     self.separator = globalOptions.separator;
 
@@ -100,11 +100,11 @@ let Validator = function () {
         self.separator = newSep;
         return self;
     };
-	
-	self.setGlobal = (name, value) => {
-		globalOptions[name] = value;
-		return self;
-	};
+
+    self.setGlobal = (name, value) => {
+        globalOptions[name] = value;
+        return self;
+    };
 
     self.arg1 = (name) => {
         if (self._curSrc === null) {
@@ -181,11 +181,11 @@ let Validator = function () {
         let err, result;
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
-                if (v._default != undefined && v._default !== null) {
+                if (v._default !== undefined && v._default !== null) {
                     v.value = v._default;
-					[err, result] = Validators[v.type](v);
+                    [err, result] = Validators[v.type](v);
                 }
-            }            
+            }
         } else {
             if (v.value === null || v.value === undefined) {
                 err = `Parameter ${v.name} required, but nothing found`;
@@ -193,13 +193,86 @@ let Validator = function () {
                 [err, result] = Validators[v.type](v);
             }
         }
-        if (err !== null) {
+        if (err !== null && err !== undefined) {
             self.errs.push(err);
         }
-        if (result !== null) {
+        if (result !== null && err !== undefined) {
             self.options[v.name] = result;
         }
     };
+
+    Object.defineProperty(self, "compound", {
+        get: () => {
+            return new Compounder(self);
+        }
+    });
+}
+
+let Compounder = function (parent) {
+    let self = this;
+
+    self.parent = parent;
+    self.build  = parent.build;
+
+    const setError = (err) => {
+        self.parent.errs.push(err);
+    };
+
+    const ifArgSet = (name) => {
+        if (!self.parent.args.hasOwnProperty(name)) {
+            throw new TypeError(`Compounder error: named argument ${name} was not found in arguments list`);
+        }
+    }
+
+    self.any = (...names) => {
+        for (let name of names) {
+            ifArgSet(name);
+            if (parent.args[name].wasSet) {
+                return self;
+            }
+        }
+        setError(checkMsg(self, `Any one of arguments ${names.join(', ')} must be defined`));
+        return self;
+    }
+
+    self.atLeast = (count, ...names) => {
+        if (count >= names.length) {
+            throw new TypeError(`Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`);
+        }
+        let counter = 0;
+        for (name of names) {
+            ifArgSet(name);
+            if (parent.args[name].wasSet) {
+                counter += 1;
+            }
+        }
+        if (counter < count) {
+            setError(checkMsg(self, `At least ${count} name in ${names.join(', ')} must be defined, but ${count} found`));
+        }
+        return self;
+    }
+	
+	self.exact = (count, ...names) => {
+        if (count >= names.length) {
+            throw new TypeError(`Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
+        }
+        let counter = 0;
+        for (name of names) {
+            ifArgSet(name);
+            if (parent.args[name].wasSet) {
+                counter += 1;
+            }
+        }
+        if (counter !== count) {
+            setError(checkMsg(self, `At least ${count} name in ${names.join(', ')} must be defined, but ${count} found`));
+        }
+        return self;
+    }
+	
+	self.message = (message) => {
+		self._message = message;
+		return self;
+	}
 }
 
 let Variable = function (parent, name, value) {
@@ -210,6 +283,10 @@ let Variable = function (parent, name, value) {
     self.value   = value;
     self.type    = null;
     self.message = null;
+    self.wasSet  = false;
+    if (value !== null && value !== undefined) {
+        self.wasSet = true;
+    }
 
     /*
     self._message = undefined;
@@ -236,12 +313,9 @@ let Variable = function (parent, name, value) {
     }
 
     self.ofType = (typeName) => {
-        if (typeof(typeName) === 'string') {
-            switch (typeName.toLowerCase()) {
-                case "int": case "string": case "float": case "datetime": case "date": case "time": case "bool": case "regexp": case "func":
-                    self.type = typeName;
-                    return self;
-            }
+        if (typeof(typeName) === 'string' && self.parent.Validators.hasOwnProperty(typeName)) {
+            self.type = typeName;
+            return self;
         }
         if (typeof(typeName) === 'function') {
             self.type = "func";
@@ -269,10 +343,23 @@ let Variable = function (parent, name, value) {
             return self;
         }
     });
+    Object.defineProperty(self, "compound", {
+        get: () => {
+            return self.parent.compound;
+        }
+    });
     ["trim", "unsigned", "strict"].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {
                 self[`_${name}`] = true;
+                return self;
+            }
+        });
+    });
+    Object.keys(self.parent.Validators).forEach(key => {
+        Object.defineProperty(self, key, {
+            get: () => {
+                self.ofType(key);
                 return self;
             }
         });

@@ -23,4 +23,28 @@ describe("Should test func validator", () => {
 		chai.expect(options).to.be.null;
 	});
 	
+	it ("Should test simple func with operator method", () => {
+		let [err, options] = new Validator()
+		.arg("a", 2).required.ofType("func")
+			.operator((a) => {
+				return a % 2 == 0;
+			}).message("Value must be even").build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.equal(2);
+	});
+	
+	it ("Should test simple func alias with operator method", () => {
+		let [err, options] = new Validator()
+		.arg("a", 2).required.func
+			.operator((a) => {
+				return a % 2 == 0;
+			}).message("Value must be even").build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.equal(2);
+	});
+	
 });

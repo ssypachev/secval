@@ -16,6 +16,19 @@ describe("Should test int validator", () => {
 		chai.expect(options.a).to.equal(100500);
 	});
 	
+	it ("Should test valid int with alias, simple, required", () => {
+		let arg = {
+			a: 100500
+		};
+		let [err, options] = new Validator().with(arg)
+		.arg("a").required.int.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).to.have.property("a");
+		chai.expect(options.a).to.be.an("number");
+		chai.expect(options.a).to.equal(100500);
+	});
+	
 	it ("Should test invalid int with several custom messages, setSeparator", () => {
 		let arg = {
 			a: "a",

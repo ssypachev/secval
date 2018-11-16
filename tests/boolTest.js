@@ -25,6 +25,28 @@ describe("Should test boolean validator", () => {
 		chai.expect(options.a).to.be.false;
 	});
 	
+	it ("Should test valid bool alias, simple, required", () => {
+		let arg = {
+			a: true
+		};
+		let [err, options] = new Validator().with(arg)
+		.arg("a").required.bool.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.be.true;
+		
+		arg = {
+			a: false
+		};
+		[err, options] = new Validator().with(arg)
+		.arg("a").required.bool.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.be.false;
+	});
+	
 	it ("Should test invalid bool, simple, required", () => {
 		let arg = {
 			a: 123
