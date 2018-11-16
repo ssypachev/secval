@@ -1,15 +1,13 @@
-const ValidTypes = {
-    "int": {
-        description: "Integer"
-    }
-}
-
 const checkMsg = (v, stdMsg) => {
     if (v._message) {
         return v._message;
     }
     return stdMsg;
 }
+
+let globalOptions = {
+	separator: ", "
+};
 
 /**
 * Conveyor order
@@ -22,7 +20,7 @@ let Validator = function () {
     let self = this;
 
     const Validators = {
-        "int": (v) => {
+        int (v) {
             let has = false;
             if (!/[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.name} must be int, but ${v.value} found`)];
@@ -39,7 +37,7 @@ let Validator = function () {
             }
             return [null, v.value];
         },
-        "float": (v) => {
+        float (v) {
             if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.name} must be float, but ${v.value} found`)];
             }
@@ -52,7 +50,7 @@ let Validator = function () {
             }
             return [null, v.value];
         },
-        "string": (v) => {
+        string (v) {
             let val = v.value.toString();
             if (v._trim) {
                 val = val.trim();
@@ -65,7 +63,7 @@ let Validator = function () {
             }
             return [null, val];
         },
-        "bool": (v) => {
+        bool (v) {
             switch (typeof(v.value)) {
             case "boolean":
                 return [null, v.value];
@@ -79,26 +77,34 @@ let Validator = function () {
             }
             return [checkMsg(v, `Parameter ${v.name} must be boolean, hence true or false, but ${v.value} found`)];
         },
-		"func": (v) => {
-			if (!v._operator) {
-				return [checkMsg(v, `Parameter ${v.name} has functional validator, but no functions found`)];
-			}
-			const res = v._operator(v.value);
-			if (res) {
-				return [null, v.value];
-			}
-			return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
-		}
+        func (v) {
+            if (!v._operator) {
+                return [checkMsg(v, `Parameter ${v.name} has functional validator, but no function found`)];
+            }
+            const res = v._operator(v.value);
+            if (res) {
+                return [null, v.value];
+            }
+            return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
+        }
     };
 
-    self.separator = ", ";
+    self.separator = globalOptions.separator;
 
-    //The set of objects to be validated
     self.args = {};
-    //Current source. If defined, then arg1 will use _curSrc.
     self._curSrc = null;
-    self.errs = [];
+    self.errs    = [];
     self.options = {};
+
+    self.setSeparator = (newSep) => {
+        self.separator = newSep;
+        return self;
+    };
+	
+	self.setGlobal = (name, value) => {
+		globalOptions[name] = value;
+		return self;
+	};
 
     self.arg1 = (name) => {
         if (self._curSrc === null) {
@@ -177,9 +183,9 @@ let Validator = function () {
             if (v.value === null || v.value === undefined) {
                 if (v._default != undefined && v._default !== null) {
                     v.value = v._default;
+					[err, result] = Validators[v.type](v);
                 }
-            }
-            [err, result] = Validators[v.type](v);
+            }            
         } else {
             if (v.value === null || v.value === undefined) {
                 err = `Parameter ${v.name} required, but nothing found`;
@@ -203,10 +209,10 @@ let Variable = function (parent, name, value) {
     self.name    = name;
     self.value   = value;
     self.type    = null;
-	self.message = null;
+    self.message = null;
 
     /*
-	self._message = undefined;
+    self._message = undefined;
     self._min = undefined;
     self._max = undefined;
     self._unsigned = undefined;
@@ -271,10 +277,10 @@ let Variable = function (parent, name, value) {
             }
         });
     });
-	self.message = (value) => {
-		self._message = value;
-		return self;
-	};
+    self.message = (value) => {
+        self._message = value;
+        return self;
+    };
     self.operator = (value) => {
         self._operator = value;
         return self;

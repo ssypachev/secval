@@ -16,6 +16,28 @@ describe("Should test int validator", () => {
 		chai.expect(options.a).to.equal(100500);
 	});
 	
+	it ("Should test invalid int with several custom messages, setSeparator", () => {
+		let arg = {
+			a: "a",
+			b: "b"
+		};
+		let [err, options] = new Validator().with(arg)
+		.arg("a").required.ofType("int").message("Aaa")
+		.arg("b").required.ofType("int").message("Bbb")
+		.build();
+		
+		chai.expect(err).not.to.be.null;
+		chai.expect(err).to.equal("Aaa, Bbb");		
+		
+		[err, options] = new Validator().setSeparator(':').with(arg)
+		.arg("a").required.ofType("int").message("Aaa")
+		.arg("b").required.ofType("int").message("Bbb")
+		.build();
+		
+		chai.expect(err).not.to.be.null;
+		chai.expect(err).to.equal("Aaa:Bbb");		
+	});
+	
 	it ("Should test valid int, simple, required, direct", () => {
 		let [err, options] = new Validator()
 		.arg("a", 100500).required.ofType("int").build();
