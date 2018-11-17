@@ -9,6 +9,14 @@ let globalOptions = {
     separator: ", "
 };
 
+const array2set = (arr) => {
+	let out = {};
+	arr.forEach(name => {
+		out[name] = true;
+	});
+	return out;
+};
+
 /**
 * Conveyor order
 * 1. Type
@@ -98,7 +106,17 @@ let Validator = function () {
                 return [null, str];
             }
             return [checkMsg(v, `Parameter ${v.name} doesn't match regexp validator ${v._operator.toString()}`)];
-        }
+        },
+		enum (v) {
+			if (!v._operator) {
+                return [checkMsg(v, `Parameter ${v.name} has enum validator, but no enumeration found`)];
+            }
+			let value = v.value.toString();
+			if (v._operator.hasOwnProperty(value)) {
+				return [null, value];
+			}
+			return [checkMsg(v, `Parameter ${v.name} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
+		}
     };
     self.Validators = Validators;
 
@@ -367,7 +385,7 @@ let Variable = function (parent, name, value) {
             return self.parent.compound;
         }
     });
-    ["trim", "unsigned", "strict"].forEach(name => {
+    ["trim", "unsigned", "strict", "ignorecase"].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {
                 self[`_${name}`] = true;
@@ -414,6 +432,21 @@ let Variable = function (parent, name, value) {
         self._operator = proc;
         return self;
     };
+	self.enumeration = (...args) => {
+		let data;
+		if (args.length === 1) {
+			if (Array.isArray(args[0])) {
+				data = args[0];
+			} else if (typeof(args[0]) === 'object') {
+				data = Object.keys(args[0]);
+			}
+		} else {
+			data = args;
+		}
+		self.type = "enum";
+		self._operator = array2set(data);
+		return self;
+	};
     self.post = (proc) => {
         self._post = proc;
         return self;
