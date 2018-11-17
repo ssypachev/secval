@@ -84,8 +84,9 @@ will be validated
 - string
 - func
 - bool
+- regexp
 
-Also, each type has similarly-named aliases
+Also, each type has similarly-named aliases (except regexp, which has name `regular`)
 ```
 let a = 100;
 
@@ -101,7 +102,7 @@ let [err, options] = new Validator()
 
 - int - min integer value
 - float - min float value
-- string - min length of string
+- string/regexp - min length of string
 
 ## max
 
@@ -109,7 +110,7 @@ let [err, options] = new Validator()
 
 - int - max integer value
 - float - max float value
-- string - max length of string
+- string/regexp - max length of string
 
 ## between
 
@@ -117,7 +118,7 @@ let [err, options] = new Validator()
 
 - int - min and max integer value
 - float - min and max float value
-- string - min and max length of string
+- string/regexp - min and max length of string
 
 ## message
 
