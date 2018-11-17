@@ -85,6 +85,19 @@ let Validator = function () {
                 return [null, v.value];
             }
             return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
+        },
+        regexp (v) {
+            if (!v._operator) {
+                return [checkMsg(v, `Parameter ${v.name} has regexp validator, but no regular expression found`)];
+            }
+            let [err, str] = Validators.string(v);
+            if (err) {
+                return [err, null];
+            }
+            if (v._operator.test(str)) {
+                return [null, str];
+            }
+            return [checkMsg(v, `Parameter ${v.name} doesn't match regexp validator ${v._operator.toString()}`)];
         }
     };
     self.Validators = Validators;
@@ -251,8 +264,8 @@ let Compounder = function (parent) {
         }
         return self;
     }
-	
-	self.exact = (count, ...names) => {
+
+    self.exact = (count, ...names) => {
         if (count >= names.length) {
             throw new TypeError(`Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
         }
@@ -268,11 +281,11 @@ let Compounder = function (parent) {
         }
         return self;
     }
-	
-	self.message = (message) => {
-		self._message = message;
-		return self;
-	}
+
+    self.message = (message) => {
+        self._message = message;
+        return self;
+    }
 }
 
 let Variable = function (parent, name, value) {
@@ -323,7 +336,13 @@ let Variable = function (parent, name, value) {
             return self;
         }
         throw new TypeError(`Variable.ofType error [005]. type name ${typeName} not defined. Use int, string, float, datetime. date, time, bool, regexp`);
-    }
+    };
+
+    self.regular = (re) => {
+        self.type = "regexp";
+        self._operator = re;
+        return self;
+    };
 
     Object.defineProperty(self, "required", {
         get: () => {
@@ -392,7 +411,7 @@ let Variable = function (parent, name, value) {
         return self;
     };
     self.func = (proc) => {
-        self._func = proc;
+        self._operator = proc;
         return self;
     };
     self.post = (proc) => {
