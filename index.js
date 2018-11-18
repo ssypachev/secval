@@ -118,12 +118,19 @@ let Validator = function () {
 			return [checkMsg(v, `Parameter ${v.name} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
 		}
     };
+	
     self.Validators = Validators;
 
     self.separator = globalOptions.separator;
 
-    self.args = {};
-    self._curSrc = null;
+    self.args    = {};
+	self.flatmap = {};
+	self.nextNode = null;
+	self.curNode = {
+		name: "",
+		src: null,
+		prevNode: null
+	};
     self.errs    = [];
     self.options = {};
 
@@ -136,17 +143,39 @@ let Validator = function () {
         globalOptions[name] = value;
         return self;
     };
+	
+	self.addArg = (name, value) => {
+		if (value.constructor.name !== 'Variable') {
+			let node = {
+				src: value,
+				name: name,
+				prevNode: self
+			};
+			self.curNode = node;
+		}
+		self.args[name] = value;
+	};
+	
+	Object.defineProperty(self, "end", {
+		get: () => {
+			if (self.curNode.prevNode !== null) {
+				self.curNode = self.curNode.prevNode;
+				return self;
+			}
+			throw new TypeError("Validator error: call `end`, but can not pop up");
+		}
+	});
 
     self.arg1 = (name) => {
-        if (self._curSrc === null) {
+        if (self.curNode.src === null) {
             throw new ReferenceError("Validator.arg(a). Current source wasn't defined. Please, first define source with 'with' method");
         }
         if (self.args.hasOwnProperty(name)) {
             throw new TypeError(`Validator.arg(a). Duplicated entry ${name}`);
         }
-
-        const out = new Variable(self, name, self._curSrc[name]);
-        self.args[name] = out;
+		if ()
+        const out = new Variable(self, name, self.curNode.src[name]);
+		self.addArg(name, out);
         return out;
     }
 
@@ -155,7 +184,7 @@ let Validator = function () {
             throw new TypeError(`Validator.arg(a, b). Duplicated entry ${name}`);
         }
         const out = new Variable(self, name, value);
-        self.args[name] = out;
+        self.addArg(name, out);
         return out;
     }
 
@@ -174,7 +203,7 @@ let Validator = function () {
     }
 
     self.with = (src) => {
-        self._curSrc = src;
+        self.curNode.src = src;
         return self;
     }
 
@@ -304,6 +333,7 @@ let Compounder = function (parent) {
         self._message = message;
         return self;
     }
+
 }
 
 let Variable = function (parent, name, value) {
