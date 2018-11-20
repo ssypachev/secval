@@ -217,7 +217,7 @@ let Validator = function () {
                     [err, result] = Validators[v.type](v);
                 }
             } else {
-				self.options[v.name] = v.value;
+				[err, result] = Validators[v.type](v);
 			}
         } else {
             if (v.value === null || v.value === undefined) {
