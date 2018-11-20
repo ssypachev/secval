@@ -216,7 +216,9 @@ let Validator = function () {
                     v.value = v._default;
                     [err, result] = Validators[v.type](v);
                 }
-            }
+            } else {
+				self.options[v.name] = v.value;
+			}
         } else {
             if (v.value === null || v.value === undefined) {
                 err = `Parameter ${v.name} required, but nothing found`;
