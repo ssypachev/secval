@@ -63,10 +63,10 @@ let Validator = function () {
                 val = val.trim();
             }
             if (v._min && val.length < v._min) {
-                return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min} chars long, but ${v.value.length} chars found`)];
+                return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min} chars long, but ${val.length} chars found`)];
             }
             if (v._max && val.length > v._max) {
-                return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max} chars long, but ${v.value.length} chars found`)];
+                return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max} chars long, but ${val.length} chars found`)];
             }
             return [null, val];
         },
