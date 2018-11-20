@@ -301,6 +301,28 @@ let Compounder = function (parent) {
         }
         return self;
     }
+	
+	self.allOrNothing = (...names) => {
+		let len = names.length,
+			counter = 0;
+		if (len === 1) {
+			if (Array.isArray(names[0]) && names[0].length > 1) {
+				names = names[0];
+			} else {
+				throw new TypeError(`Compounder error: allOrNothing compounder requires at least 2 arguments, but 1 found`);
+			}
+		}
+		for (name of names) {
+            ifArgSet(name);
+            if (parent.args[name].wasSet) {
+                counter += 1;
+            }
+        }
+		if (counter !== len && counter !== 0) {
+			setError(checkMsg(self, `All ${len} args, or no args must be set, but ${counter} set`));
+		}
+		return self;
+	}
 
     self.message = (message) => {
         self._message = message;

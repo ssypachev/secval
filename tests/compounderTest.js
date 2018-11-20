@@ -8,6 +8,93 @@ describe("Should test compounder", () => {
 		.arg("a", 5).required.int.compound.build();
 	});
 	
+	it ("should test allornothing compounder", () => {
+		let arg = {
+			a: 1,
+			b: 2,
+			c: 3
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg("a").optional.int
+		.arg("b").optional.int
+		.arg("c").optional.int
+		.compound
+		.allOrNothing("a", "b", "c")
+		.build();
+		
+		chai.expect(err).to.be.null;
+		
+		arg = {
+			
+		};
+		[err, options] = new Validator()
+		.with(arg)
+		.arg("a").optional.int
+		.arg("b").optional.int
+		.arg("c").optional.int
+		.compound
+		.allOrNothing("a", "b", "c")
+		.build();
+		
+		chai.expect(err).to.be.null;
+		
+		[err, options] = new Validator()
+		.with(arg)
+		.arg("a").optional.int
+		.arg("b").optional.int
+		.arg("c").optional.int
+		.compound
+		.allOrNothing(["a", "b", "c"])
+		.build();
+		
+		chai.expect(err).to.be.null;
+		
+		arg = {
+			a: 1
+		};
+		[err, options] = new Validator()
+		.with(arg)
+		.arg("a").optional.int
+		.arg("b").optional.int
+		.arg("c").optional.int
+		.compound
+		.allOrNothing("a", "b", "c")
+		.build();
+		
+		chai.expect(err).not.to.be.null;
+		
+		let flag = false;
+		try {
+			[err, options] = new Validator()
+			.with(arg)
+			.arg("a").optional.int
+			.arg("b").optional.int
+			.arg("c").optional.int
+			.compound
+			.allOrNothing("a")
+			.build();
+		} catch (err) {
+			flag = true;
+		}
+		chai.expect(flag).to.be.true;
+		
+		flag = false;
+		try {
+			[err, options] = new Validator()
+			.with(arg)
+			.arg("a").optional.int
+			.arg("b").optional.int
+			.arg("c").optional.int
+			.compound
+			.allOrNothing(["a"])
+			.build();
+		} catch (err) {
+			flag = true;
+		}
+		chai.expect(flag).to.be.true;
+	});
+	
 	it ("should test any and atLeast compounder, win", () => {
 		let arg = {
 			
