@@ -24,36 +24,42 @@ const array2set = (arr) => {
 * 3. Post for current argument
 * 4. Post for overal data
 */
-let Validator = function () {
+let Validator = function (base = null, src = null, pre = null) {
     let self = this;
+	
+	self.base = base;
+	self.pre  = pre;
+	self.getBase = () => {
+		return self.base;
+	};
 
     const Validators = {
         int (v) {
             if (!/[0-9]+/.test(v.value.toString())) {
-                return [checkMsg(v, `Parameter ${v.name} must be int, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be int, but ${v.value} found`)];
             }
             v.value = parseInt(v.value);
             if (v._unsigned && v.value < 0) {
-                return [checkMsg(v, `Parameter ${v.name} must be unsigned int, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be unsigned int, but ${v.value} found`)];
             }
             if (v._min && v.value < v._min) {
-                return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min}, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
             }
             if (v._max && v.value > v._max) {
-                return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max}, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
             }
             return [null, v.value];
         },
         float (v) {
             if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
-                return [checkMsg(v, `Parameter ${v.name} must be float, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be float, but ${v.value} found`)];
             }
             v.value = parseFloat(v.value);
             if (v._min && v.value < v._min) {
-                return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min}, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
             }
             if (v._max && v.value > v._max) {
-                return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max}, but ${v.value} found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
             }
             return [null, v.value];
         },
@@ -63,10 +69,10 @@ let Validator = function () {
                 val = val.trim();
             }
             if (v._min && val.length < v._min) {
-                return [checkMsg(v, `Parameter ${v.name} must be greater than ${v._min} chars long, but ${val.length} chars found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min} chars long, but ${val.length} chars found`)];
             }
             if (v._max && val.length > v._max) {
-                return [checkMsg(v, `Parameter ${v.name} must be less than ${v._max} chars long, but ${val.length} chars found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max} chars long, but ${val.length} chars found`)];
             }
             return [null, val];
         },
@@ -82,21 +88,21 @@ let Validator = function () {
                 }
                 break;
             }
-            return [checkMsg(v, `Parameter ${v.name} must be boolean, hence true or false, but ${v.value} found`)];
+            return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
         },
         func (v) {
             if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.name} has functional validator, but no function found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} has functional validator, but no function found`)];
             }
             const res = v._operator(v.value);
             if (res) {
                 return [null, v.value];
             }
-            return [checkMsg(v, `Parameter ${v.name} doesn't match functional vaidator`)];
+            return [checkMsg(v, `Parameter ${v.fullName} doesn't match functional vaidator`)];
         },
         regexp (v) {
             if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.name} has regexp validator, but no regular expression found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} has regexp validator, but no regular expression found`)];
             }
             let [err, str] = Validators.string(v);
             if (err) {
@@ -105,17 +111,17 @@ let Validator = function () {
             if (v._operator.test(str)) {
                 return [null, str];
             }
-            return [checkMsg(v, `Parameter ${v.name} doesn't match regexp validator ${v._operator.toString()}`)];
+            return [checkMsg(v, `Parameter ${v.fullName} doesn't match regexp validator ${v._operator.toString()}`)];
         },
 		enum (v) {
 			if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.name} has enum validator, but no enumeration found`)];
+                return [checkMsg(v, `Parameter ${v.fullName} has enum validator, but no enumeration found`)];
             }
 			let value = v.value.toString();
 			if (v._operator.hasOwnProperty(value)) {
 				return [null, value];
 			}
-			return [checkMsg(v, `Parameter ${v.name} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
+			return [checkMsg(v, `Parameter ${v.fullName} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
 		}
     };
     self.Validators = Validators;
@@ -123,7 +129,7 @@ let Validator = function () {
     self.separator = globalOptions.separator;
 
     self.args = {};
-    self._curSrc = null;
+    self._curSrc = src;
     self.errs    = [];
     self.options = {};
 
@@ -182,6 +188,12 @@ let Validator = function () {
         console.log(self.args);
         return self;
     }
+	
+	Object.defineProperty(self, "end", {
+		get: () => {
+			return self.pre;
+		}
+	});
 
     self.build = () => {
         self.validateAll();
@@ -210,6 +222,16 @@ let Validator = function () {
             throw new TypeError("Can not validate untyped argument");
         }
         let err, result;
+		if (v.type === 'object') {
+			[err, result] = v._operator.build();
+			if (err !== null && err !== undefined) {
+				self.errs.push(err);
+			}
+			if (result !== null && err !== undefined) {
+				self.options[v.name] = result;
+			}
+			return;
+		}
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
                 if (v._default !== undefined && v._default !== null) {
@@ -221,7 +243,7 @@ let Validator = function () {
 			}
         } else {
             if (v.value === null || v.value === undefined) {
-                err = `Parameter ${v.name} required, but nothing found`;
+                err = `Parameter ${v.fullName} required, but nothing found`;
             } else {
                 [err, result] = Validators[v.type](v);
             }
@@ -425,6 +447,15 @@ let Variable = function (parent, name, value) {
             }
         });
     });
+	Object.defineProperty(self, "object", {
+		get: () => {
+			self.type = "object";
+			let base = self.parent.getBase();
+			let nv = new Validator(base ? base + "." + self.name : self.name, self.value, self.parent);
+			self._operator = nv;
+			return nv;
+		}
+	});
     self.message = (value) => {
         self._message = value;
         return self;
@@ -475,6 +506,20 @@ let Variable = function (parent, name, value) {
         self._post = proc;
         return self;
     };
+	Object.defineProperty(self, "end", {
+		get: () => {
+			return self.parent.end;
+		}
+	});
+	Object.defineProperty(self, 'fullName', {
+		get: () => {
+			let path = self.parent.getBase();
+			if (path) {
+				return path + "." + self.name;
+			}
+			return self.name;
+		}
+	});
 }
 
 module.exports.Validator = Validator;
