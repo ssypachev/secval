@@ -9,6 +9,10 @@ let globalOptions = {
     separator: ", "
 };
 
+let isDef = (o) => {
+	return o !== undefined && o !== null;
+}
+
 const array2set = (arr) => {
 	let out = {};
 	arr.forEach(name => {
@@ -24,11 +28,12 @@ const array2set = (arr) => {
 * 3. Post for current argument
 * 4. Post for overal data
 */
-let Validator = function (base = null, src = null, pre = null) {
+let Validator = function (base = null, src = null, pre = null, omit = false) {
     let self = this;
 	
 	self.base = base;
 	self.pre  = pre;
+	self.omit = omit;
 	self.getBase = () => {
 		return self.base;
 	};
@@ -222,6 +227,9 @@ let Validator = function (base = null, src = null, pre = null) {
 	});
 
     self.build = () => {
+		if (self.omit === true) {
+			return [null, null];
+		}
         self.validateAll();
         if (self.errs.length > 0) {
             let textErr = [];
@@ -250,7 +258,7 @@ let Validator = function (base = null, src = null, pre = null) {
         let err, result;
 		if (v.type === 'object') {
 			[err, result] = v._operator.build();
-			if (err !== null && err !== undefined) {
+			if (isDef(err)) {
 				self.errs.push(err);
 			}
 			if (result !== null && err !== undefined) {
@@ -260,7 +268,7 @@ let Validator = function (base = null, src = null, pre = null) {
 		}
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
-                if (v._default !== undefined && v._default !== null) {
+                if (isDef(v._default)) {
                     v.value = v._default;
                     [err, result] = Validators[v.type](v);
                 }
@@ -268,13 +276,13 @@ let Validator = function (base = null, src = null, pre = null) {
 				[err, result] = Validators[v.type](v);
 			}
         } else {
-            if (v.value === null || v.value === undefined) {
+            if (!isDef(v.value)) {
                 err = `Parameter ${v.fullName} required, but nothing found`;
             } else {
                 [err, result] = Validators[v.type](v);
             }
         }
-        if (err !== null && err !== undefined) {
+        if (isDef(err)) {
             self.errs.push(err);
         }
         if (result !== null && err !== undefined) {
@@ -387,7 +395,7 @@ let Variable = function (parent, name, value) {
     self.type    = null;
     self.message = null;
     self.wasSet  = false;
-    if (value !== null && value !== undefined) {
+    if (isDef(value)) {
         self.wasSet = true;
     }
 
@@ -426,7 +434,7 @@ let Variable = function (parent, name, value) {
             self._operator = typeName;
             return self;
         }
-        throw new TypeError(`Variable.ofType error [005]. type name ${typeName} not defined. Use int, string, float, datetime. date, time, bool, regexp`);
+        throw new TypeError(`Variable.ofType error. type name ${typeName} not defined. Use int, string, float, datetime. date, time, bool, regexp`);
     };
 
     self.regular = (re) => {
@@ -477,8 +485,28 @@ let Variable = function (parent, name, value) {
 	Object.defineProperty(self, "object", {
 		get: () => {
 			self.type = "object";
-			let base = self.parent.getBase();
-			let nv = new Validator(base ? base + "." + self.name : self.name, self.value, self.parent);
+			let base = self.parent.getBase(),
+				newSrc, 
+				newOmit = false;
+			if (self._optional) {
+				if (isDef(self._default)) {
+					self.value = self._default;
+				} else {					
+					newOmit = true;
+				}
+			}
+			if (typeof(self.value) === "object" && self.value !== null) {
+				newSrc = self.value;
+			} else {
+				if (newOmit === false) {
+					parent.errs.push(checkMsg(self, `Parameter ${self.fullName} must be object`));
+				}
+				newSrc = {};
+			}
+			if (self.omit === true) {
+				newOmit = true;
+			}
+			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit);
 			self._operator = nv;
 			return nv;
 		}
