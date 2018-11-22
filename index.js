@@ -122,6 +122,32 @@ let Validator = function (base = null, src = null, pre = null) {
 				return [null, value];
 			}
 			return [checkMsg(v, `Parameter ${v.fullName} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
+		},
+		array (v) {
+			const isa = Array.isArray(v.value);
+			if (v._strict && !isa) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be array`)];
+			}
+			let val;
+			if (isa) {
+				val = v.value;
+			} else {
+				try {
+					val = JSON.parse(v.value);
+				} catch (err) {
+					return [checkMsg(v, `Parameter ${v.fullName} is not valid json array, found ${v.value}`)];
+				}
+			}
+			if (v._exact && val.length != v._exact) {
+				return [checkMsg(v, `Parameter ${v.fullName} must contain exactly ${v._exact} elements, but ${val.length} found`)];
+			}
+			if (v._min && val.length < v._min) {
+				return [checkMsg(v, `Parameter ${v.fullName} must contain at least ${v._min} elements, but ${val.length} found`)];
+			}
+			if (v._max && val.length > v._max) {
+				return [checkMsg(v, `Parameter ${v.fullName} must contain no more than ${v._max} elements, but ${val.length} found`)];
+			}
+			return [null, val];
 		}
     };
     self.Validators = Validators;
@@ -374,6 +400,7 @@ let Variable = function (parent, name, value) {
     self._strict = undefined;
     self._default = undefined;
     self._operator = undefined;
+	self._exact = undefined;
     */
 
     self.arg = self.parent.arg;
@@ -475,6 +502,13 @@ let Variable = function (parent, name, value) {
         [self._min, self._max] = [a, b];
         return self;
     };
+	self.exactly = (num) => {
+		if (num < 0) {
+			throw new TypeError("Variable modifier exactly supports only unsigned values");
+		}
+		self._exact = num;
+		return self;
+	};
     self.min = (a) => {
         self._min = a;
         return self;
