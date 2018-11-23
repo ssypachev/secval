@@ -225,8 +225,8 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
 			return self.pre;
 		}
 	});
-
-    self.build = () => {
+	
+	self.internalBuild = () => {
 		if (self.omit === true) {
 			return [null, null];
 		}
@@ -239,6 +239,17 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             return [textErr.join(self.separator), null];
         }
         return [null, self.options];
+	}
+
+    self.build = () => {
+		tmp = self.pre;
+		if (tmp) {
+			while (tmp.pre !== null) {
+				tmp = tmp.pre;
+			}
+			return tmp.build();
+		}
+		return self.internalBuild();
     };
 
     self.arguments = () => {
@@ -257,7 +268,7 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
         }
         let err, result;
 		if (v.type === 'object') {
-			[err, result] = v._operator.build();
+			[err, result] = v._operator.internalBuild();
 			if (isDef(err)) {
 				self.errs.push(err);
 			}

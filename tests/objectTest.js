@@ -106,6 +106,25 @@ describe("Should test object validator", () => {
 		console.log(err);
 	});
 	
+	it ("Should test full end when build", () => {
+		
+		let arg = {
+			a: {
+				b: { 
+					x: "123"
+				}
+			}
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg("a").required.object
+			.arg("b").required.object
+				.arg("x").required.int
+		.build();
+		console.log(options);
+		
+	});
+	
 });
 
 
