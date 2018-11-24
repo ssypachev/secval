@@ -74,6 +74,20 @@ describe("Should test float validator", () => {
 		
 		chai.expect(options.a).to.equal("  somestring  ");
 	});
+	
+	it ("should fail on strict", () => {
+		let [err, options] = new Validator()
+		.arg("a", 123).required.string.strict.build();
+		
+		chai.expect(err).not.to.be.null;
+		
+		[err, options] = new Validator()
+		.arg("a", 123).required.string.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.equal("123");
+	});
 });
 
 

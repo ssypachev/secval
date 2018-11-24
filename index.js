@@ -69,6 +69,11 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             return [null, v.value];
         },
         string (v) {
+			if (v._strict) {
+				if (typeof(v.value) !== 'string') {
+					return [checkMsg(v, `Parameter ${v.fullName} must be of type string`)];
+				}
+			}
             let val = v.value.toString();
             if (v._trim) {
                 val = val.trim();
