@@ -110,7 +110,7 @@ describe("Should test boolean validator", () => {
 			a: "True"
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("bool").ignorecase.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -120,7 +120,7 @@ describe("Should test boolean validator", () => {
 			a: "FALSE"
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("bool").ignorecase.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -136,6 +136,25 @@ describe("Should test boolean validator", () => {
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;
+		
+		arg = {
+			a: "true"
+		};
+		[err, options] = new Validator().with(arg)
+		.arg("a").required.ofType("bool").strict.build();
+		
+		chai.expect(err).not.to.be.null;
+		chai.expect(options).to.be.null;
+		
+		arg = {
+			a: true
+		};
+		[err, options] = new Validator().with(arg)
+		.arg("a").required.ofType("bool").strict.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
 	});
+	
 	
 });

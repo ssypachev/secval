@@ -40,6 +40,9 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
 
     const Validators = {
         int (v) {
+			if (v._strict && typeof(v.value) !== 'number') {
+				return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
+			}
             if (!/[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.fullName} must be int, but ${v.value} found`)];
             }
@@ -56,6 +59,9 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             return [null, v.value];
         },
         float (v) {
+			if (v._strict && typeof(v.value) !== 'number') {
+				return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
+			}
             if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
                 return [checkMsg(v, `Parameter ${v.fullName} must be float, but ${v.value} found`)];
             }
@@ -69,10 +75,8 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             return [null, v.value];
         },
         string (v) {
-			if (v._strict) {
-				if (typeof(v.value) !== 'string') {
-					return [checkMsg(v, `Parameter ${v.fullName} must be of type string`)];
-				}
+			if (v._strict && typeof(v.value) !== 'string') {
+				return [checkMsg(v, `Parameter ${v.fullName} must be of type string`)];
 			}
             let val = v.value.toString();
             if (v._trim) {
@@ -87,12 +91,16 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             return [null, val];
         },
         bool (v) {
-            switch (typeof(v.value)) {
+			let t = typeof(v.value);
+			if (v._strict && t !== 'boolean') {
+				return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
+			}
+            switch (t) {
             case "boolean":
                 return [null, v.value];
                 break;
             case "string":
-                let flags = v._strict ? "" : "i";
+                let flags = v._ignorecase ? "i" : "";
                 if (new RegExp("^(true|false)$", flags).test(v.value)) {
                     return [null, JSON.parse(v.value.toLowerCase())];
                 }
@@ -420,6 +428,7 @@ let Variable = function (parent, name, value) {
     self._min = undefined;
     self._max = undefined;
     self._unsigned = undefined;
+    self._ignorecase = undefined;
     self._trim = undefined;
     self._strict = undefined;
     self._default = undefined;
