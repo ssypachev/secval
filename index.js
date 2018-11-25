@@ -486,19 +486,7 @@ let Variable = function (parent, name, value) {
             return self;
         }
     });
-    Object.defineProperty(self, "compound", {
-        get: () => {
-            return self.parent.compound;
-        }
-    });
-    ["trim", "unsigned", "strict", "ignorecase"].forEach(name => {
-        Object.defineProperty(self, name, {
-            get: () => {
-                self[`_${name}`] = true;
-                return self;
-            }
-        });
-    });
+    
     Object.keys(self.parent.Validators).forEach(key => {
         Object.defineProperty(self, key, {
             get: () => {
@@ -507,47 +495,12 @@ let Variable = function (parent, name, value) {
             }
         });
     });
-	Object.defineProperty(self, "object", {
-		get: () => {
-			self.type = "object";
-			let base = self.parent.getBase(),
-				newSrc, 
-				newOmit = false;
-			if (self._optional) {
-				if (isDef(self._default)) {
-					self.value = self._default;
-				} else {					
-					newOmit = true;
-				}
-			}
-			if (typeof(self.value) === "object" && self.value !== null) {
-				newSrc = self.value;
-			} else {
-				if (newOmit === false) {
-					parent.errs.push(checkMsg(self, `Parameter ${self.fullName} must be object`));
-				}
-				newSrc = {};
-			}
-			if (self.omit === true) {
-				newOmit = true;
-			}
-			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit);
-			self._operator = nv;
-			return nv;
+	["operator", "default", "message"].forEach(name => {
+		self[name] = (value) => {
+			self[`_${name}`] = value;
+			return self;
 		}
 	});
-    self.message = (value) => {
-        self._message = value;
-        return self;
-    };
-    self.operator = (value) => {
-        self._operator = value;
-        return self;
-    };
-    self.default = (value) => {
-        self._default = value;
-        return self;
-    };
     self.between = (a, b) => {
         if (a >= b) {
             throw new TypeError(`Variable option 'between' error: first argument must be less than second argument, but ${a}, ${b} found`);
@@ -589,10 +542,50 @@ let Variable = function (parent, name, value) {
 		self._operator = array2set(data);
 		return self;
 	};
-    self.post = (proc) => {
-        self._post = proc;
-        return self;
-    };
+	
+	//Properties
+	Object.defineProperty(self, "compound", {
+        get: () => {
+            return self.parent.compound;
+        }
+    });
+    ["trim", "unsigned", "strict", "ignorecase"].forEach(name => {
+        Object.defineProperty(self, name, {
+            get: () => {
+                self[`_${name}`] = true;
+                return self;
+            }
+        });
+    });
+	Object.defineProperty(self, "object", {
+		get: () => {
+			self.type = "object";
+			let base = self.parent.getBase(),
+				newSrc, 
+				newOmit = false;
+			if (self._optional) {
+				if (isDef(self._default)) {
+					self.value = self._default;
+				} else {					
+					newOmit = true;
+				}
+			}
+			if (typeof(self.value) === "object" && self.value !== null) {
+				newSrc = self.value;
+			} else {
+				if (newOmit === false) {
+					parent.errs.push(checkMsg(self, `Parameter ${self.fullName} must be object`));
+				}
+				newSrc = {};
+			}
+			if (self.omit === true) {
+				newOmit = true;
+			}
+			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit);
+			self._operator = nv;
+			return nv;
+		}
+	});
 	Object.defineProperty(self, "end", {
 		get: () => {
 			return self.parent.end;
@@ -600,7 +593,7 @@ let Variable = function (parent, name, value) {
 	});
 	Object.defineProperty(self, 'fullName', {
 		get: () => {
-			let path = self.parent.getBase();
+			const path = self.parent.getBase();
 			if (path) {
 				return path + "." + self.name;
 			}
