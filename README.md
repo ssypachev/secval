@@ -49,4 +49,4 @@ call
 
 ## Issues
 
-All issues directly to `sypachev_s_s@mail.ru` or pull in github.
+All issues directly to `sypachev_s_s@mail.ru` (subject `secval`) or pull in github.
