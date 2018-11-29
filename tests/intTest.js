@@ -3,6 +3,24 @@ const chai = require('chai'),
 	
 describe("Should test int validator", () => {
 	
+	it ("Should test undefined optional", () => {
+		let arg = {};
+		let [err, options] = new Validator()
+		.with(arg).arg('a').optional.int.build();
+		
+		chai.expect(options).not.to.be.null;
+		
+		[err, options] = new Validator()
+		.with(arg).arg('a').optional.default(35).int.build();
+		
+		chai.expect(options.a).to.equal(35);
+		
+		[err, options] = new Validator()
+		.with(arg).arg('a').optional.default('beef').int.build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should test valid int, simple, required", () => {
 		let arg = {
 			a: 100500
