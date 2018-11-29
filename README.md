@@ -46,3 +46,7 @@ Library does not have any dependencies for production use. For testing `mocha` a
 call
 
 `npm run test`
+
+## Issues
+
+All issues directly to `sypachev_s_s@mail.ru` or pull in github.
