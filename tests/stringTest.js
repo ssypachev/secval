@@ -33,6 +33,32 @@ describe("Should test float validator", () => {
 		chai.expect(err).to.be.null;
 	});
 	
+	it ("Should test uppercase", () => {
+		
+		let [err, options] = new Validator()
+		.arg("a", "somestring").required.string.uppercase.build();
+		
+		chai.expect(err).not.to.be.null;
+		
+		[err, options] = new Validator()
+		.arg("a", "SOMESTRING").required.string.uppercase.build();
+		
+		chai.expect(err).to.be.null;
+	});
+	
+	it ("Should test lowercase", () => {
+		
+		let [err, options] = new Validator()
+		.arg("a", "somestring").required.string.lowercase.build();
+		
+		chai.expect(err).to.be.null;
+		
+		[err, options] = new Validator()
+		.arg("a", "SOMESTRING").required.string.lowercase.build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should test toLowerCase toUpperCase", () => {
 		
 		let [err, options] = new Validator()
