@@ -20,6 +20,33 @@ describe("Should test float validator", () => {
 		
 	});
 	
+	it ("Should test exact", () => {
+		
+		let [err, options] = new Validator()
+		.arg("a", "somestring").required.string.exactly(3).build();
+		
+		chai.expect(err).not.to.be.null;
+		
+		[err, options] = new Validator()
+		.arg("a", "lol").required.string.exactly(3).build();
+		
+		chai.expect(err).to.be.null;
+	});
+	
+	it ("Should test toLowerCase toUpperCase", () => {
+		
+		let [err, options] = new Validator()
+		.arg("a", "somestring").required.string.toUpperCase.build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options.a).to.equal("SOMESTRING");
+		
+		[err, options] = new Validator()
+		.arg("a", "loL").required.string.toLowerCase.build();
+		
+		chai.expect(options.a).to.equal("lol");
+	});
+	
 	it ("Should test simple string, min, required", () => {
 		
 		let [err, options] = new Validator()

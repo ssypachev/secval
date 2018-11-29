@@ -88,6 +88,15 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             if (v._max && val.length > v._max) {
                 return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max} chars long, but ${val.length} chars found`)];
             }
+			if (v._exact && val.length !== v._exact) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be of length ${v._exact}, but ${val.length} chars found`)];
+			}
+			if (v._toUpperCase) {
+				val = val.toUpperCase();
+			}
+			if (v._toLowerCase) {
+				val = val.toLowerCase();
+			}
             return [null, val];
         },
         bool (v) {
@@ -549,7 +558,7 @@ let Variable = function (parent, name, value) {
             return self.parent.compound;
         }
     });
-    ["trim", "unsigned", "strict", "ignorecase"].forEach(name => {
+    ["trim", "unsigned", "strict", "ignorecase", "toLowerCase", "toUpperCase"].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {
                 self[`_${name}`] = true;
