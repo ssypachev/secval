@@ -30,9 +30,9 @@ app.post('/users', async (req, res) => {
         .arg('gender').optional.enumeration(['male', 'female'])
         .arg('location').optional.object
             .arg('latitude').optional.float
-            .arg('longitude').optional.float
-            .compounder.allOrNothing('latitude', 'longitude')
+            .arg('longitude').optional.float            
         .end
+		.compounder.allOrNothing('location.latitude', 'location.longitude')
         .build();
     if (err) {
         res.status(400).send({ error: err });
