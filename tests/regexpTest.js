@@ -64,6 +64,17 @@ describe("Should test regexp validator", () => {
         chai.expect(err).not.to.be.null;
         chai.expect(options).to.be.null;
     });
+	
+	it ("Should post process regexp-ed value", () => {
+		let arg = {
+            a: "letter"
+        };
+        let [err, options] = new Validator()
+        .with(arg)
+        .arg("a").required.regular(/ett/i).toUpperCase.build();
+		
+		chai.expect(options.a).to.equal('LETTER');
+	});
 
 });
 

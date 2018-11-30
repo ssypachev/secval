@@ -1,4 +1,5 @@
 const checkMsg = (v, stdMsg) => {
+	v.hasError = true;
     if (v._message) {
         return v._message;
     }
@@ -38,6 +39,21 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
 		return self.base;
 	};
 
+	const PostProcessors = {
+		string (v, val) {
+			if (v._toUpperCase) {
+				val = val.toUpperCase();
+			}
+			if (v._toLowerCase) {
+				val = val.toLowerCase();
+			}
+            return val;
+		},
+		regexp (v, val) {
+			return this.string(v, val);
+		}
+	};
+	
     const Validators = {
         int (v) {
 			if (v._strict && typeof(v.value) !== 'number') {
@@ -96,12 +112,6 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
 			}
 			if (v._lowercase && val !== val.toLowerCase()) {
 				return [checkMsg(v, `Parameter ${v.fullName} must be lowercase`)];
-			}
-			if (v._toUpperCase) {
-				val = val.toUpperCase();
-			}
-			if (v._toLowerCase) {
-				val = val.toLowerCase();
 			}
             return [null, val];
         },
@@ -325,6 +335,9 @@ let Validator = function (base = null, src = null, pre = null, omit = false) {
             self.errs.push(err);
         }
         if (result !== null && err !== undefined) {
+			if (PostProcessors.hasOwnProperty(v.type)) {
+				result = PostProcessors[v.type](v, result);
+			}
             self.options[v.name] = result;
         }
     };

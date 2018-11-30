@@ -31,6 +31,10 @@ describe("Should test enum validator", () => {
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.equal("one");
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+		chai.expect(options.a).to.equal("one");
 	});
 	
 	it ("Should test fail", () => {
