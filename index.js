@@ -29,12 +29,18 @@ const array2set = (arr) => {
 * 3. Post for current argument
 * 4. Post for overal data
 */
-let Validator = function (base = null, src = null, pre = null, omit = false) {
+let Validator = function (base = null, src = null, pre = null, omit = false, gmap = null) {
     let self = this;
 	
 	self.base = base;
 	self.pre  = pre;
 	self.omit = omit;
+	if (gmap === null) {
+		self.gmap = {};
+	} else {
+		self.gmap = gmap;
+	}
+	
 	self.getBase = () => {
 		return self.base;
 	};
@@ -360,7 +366,7 @@ let Compounder = function (parent) {
     };
 
     const ifArgSet = (name) => {
-        if (!self.parent.args.hasOwnProperty(name)) {
+        if (!self.parent.gmap.hasOwnProperty(name)) {
             throw new TypeError(`Compounder error: named argument ${name} was not found in arguments list`);
         }
     }
@@ -422,7 +428,7 @@ let Compounder = function (parent) {
 		}
 		for (name of names) {
             ifArgSet(name);
-            if (parent.args[name].wasSet) {
+            if (parent.gmap[name].wasSet) {
                 counter += 1;
             }
         }
@@ -447,6 +453,18 @@ let Variable = function (parent, name, value) {
     self.type    = null;
     self.message = null;
     self.wasSet  = false;
+	
+	self.fullName = () => {
+		const path = self.parent.getBase();
+			if (path) {
+				return path + "." + self.name;
+			}
+			return self.name;
+	};
+	
+	//make global name map reference
+	self.parent.gmap[self.fullName()] = self;
+	
     if (isDef(value)) {
         self.wasSet = true;
     }
@@ -609,7 +627,7 @@ let Variable = function (parent, name, value) {
 			if (self.omit === true) {
 				newOmit = true;
 			}
-			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit);
+			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit, self.parent.gmap);
 			self._operator = nv;
 			return nv;
 		}

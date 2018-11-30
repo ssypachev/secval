@@ -169,4 +169,31 @@ describe("Should test compounder", () => {
 		chai.expect(err).not.to.be.null;
 	});
 	
+	it ("should test nested compounder", () => {
+		let [err, options] = new Validator()
+		.with({
+			location: {
+				longitude: 12.12
+			}
+		}).arg('location').object
+		    .arg('latitude').optional.float
+		    .arg('longitude').optional.float
+		.end
+		.compound.allOrNothing('location.latitude', 'location.longitude')
+		.build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 });
+
+
+
+
+
+
+
+
+
+
+
