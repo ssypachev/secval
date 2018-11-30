@@ -31,8 +31,9 @@ app.post('/users', async (req, res) => {
         .arg('location').optional.object
             .arg('latitude').optional.float
             .arg('longitude').optional.float
+            .compounder.allOrNothing('latitude', 'longitude')
         .end
-        .compounder.allOrNothing('latitude', 'longitude').build();
+        .build();
     if (err) {
         res.status(400).send({ error: err });
     }
