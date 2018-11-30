@@ -9,6 +9,7 @@
   "scripts": {
     "test": "mocha tests"
   },
+  "keywords": "typed, parameter, validation, expressjs",
   "author": "",
   "license": "ISC",
   "devDependencies": {

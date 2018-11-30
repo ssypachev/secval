@@ -1,5 +1,5 @@
 # secval
-Route parameter validator.
+Typed input parameters validator _primarily_ for Express JS Framework.
 
 Please, refer to https://github.com/ssypachev/secval to get latest version and docs.
 
@@ -15,7 +15,7 @@ Or use git directly in `package.json`
 
 See wiki pages: https://github.com/ssypachev/secval/wiki
 
-## SecVal - typed argument validator _primarily_ for Express JS Framework.
+## SecVal - typed input parameters validator _primarily_ for Express JS Framework.
 
 This library in beta, though is used in production projects. Main idea is to provide way to validate input arguments and return typed arguments, errors and warnings.
 
@@ -30,9 +30,9 @@ app.post('/users', async (req, res) => {
         .arg('gender').optional.enumeration(['male', 'female'])
         .arg('location').optional.object
             .arg('latitude').optional.float
-            .arg('longitude').optional.float            
+            .arg('longitude').optional.float
         .end
-		.compounder.allOrNothing('location.latitude', 'location.longitude')
+        .compound.allOrNothing('location.latitude', 'location.longitude')
         .build();
     if (err) {
         res.status(400).send({ error: err });
