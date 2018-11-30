@@ -1,5 +1,4 @@
 const checkMsg = (v, stdMsg) => {
-	v.hasError = true;
     if (v._message) {
         return v._message;
     }
@@ -22,13 +21,164 @@ const array2set = (arr) => {
 	return out;
 };
 
-/**
-* Conveyor order
-* 1. Type
-* 2. Compound
-* 3. Post for current argument
-* 4. Post for overal data
-*/
+const PostProcessors = {
+	string (v, val) {
+		if (v._toUpperCase) {
+			val = val.toUpperCase();
+		}
+		if (v._toLowerCase) {
+			val = val.toLowerCase();
+		}
+		return val;
+	},
+	regexp (v, val) {
+		return this.string(v, val);
+	}
+};
+
+const Validators = {
+	int (v) {
+		if (v._strict && typeof(v.value) !== 'number') {
+			return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
+		}
+		if (!/[0-9]+/.test(v.value.toString())) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be int, but ${v.value} found`)];
+		}
+		v.value = parseInt(v.value);
+		if (v._unsigned && v.value < 0) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be unsigned int, but ${v.value} found`)];
+		}
+		if (v._min && v.value < v._min) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
+		}
+		if (v._max && v.value > v._max) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
+		}
+		return [null, v.value];
+	},
+	float (v) {
+		if (v._strict && typeof(v.value) !== 'number') {
+			return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
+		}
+		if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be float, but ${v.value} found`)];
+		}
+		v.value = parseFloat(v.value);
+		if (v._min && v.value < v._min) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
+		}
+		if (v._max && v.value > v._max) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
+		}
+		return [null, v.value];
+	},
+	string (v) {
+		if (v._strict && typeof(v.value) !== 'string') {
+			return [checkMsg(v, `Parameter ${v.fullName} must be of type string`)];
+		}
+		let val = v.value.toString();
+		if (v._trim) {
+			val = val.trim();
+		}
+		if (v._min && val.length < v._min) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min} chars long, but ${val.length} chars found`)];
+		}
+		if (v._max && val.length > v._max) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max} chars long, but ${val.length} chars found`)];
+		}
+		if (v._exact && val.length !== v._exact) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be of length ${v._exact}, but ${val.length} chars found`)];
+		}
+		if (v._uppercase && val !== val.toUpperCase()) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be uppercase`)];
+		}
+		if (v._lowercase && val !== val.toLowerCase()) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be lowercase`)];
+		}
+		return [null, val];
+	},
+	bool (v) {
+		let t = typeof(v.value);
+		if (v._strict && t !== 'boolean') {
+			return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
+		}
+		switch (t) {
+		case "boolean":
+			return [null, v.value];
+			break;
+		case "string":
+			let flags = v._ignorecase ? "i" : "";
+			if (new RegExp("^(true|false)$", flags).test(v.value)) {
+				return [null, JSON.parse(v.value.toLowerCase())];
+			}
+			break;
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
+	},
+	func (v) {
+		if (!v._operator) {
+			return [checkMsg(v, `Parameter ${v.fullName} has functional validator, but no function found`)];
+		}
+		const res = v._operator(v.value);
+		if (res) {
+			return [null, v.value];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} doesn't match functional vaidator`)];
+	},
+	regexp (v) {
+		if (!v._operator) {
+			return [checkMsg(v, `Parameter ${v.fullName} has regexp validator, but no regular expression found`)];
+		}
+		let [err, str] = Validators.string(v);
+		if (err) {
+			return [err, null];
+		}
+		if (v._operator.test(str)) {
+			return [null, str];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} doesn't match regexp validator ${v._operator.toString()}`)];
+	},
+	enum (v) {
+		if (!v._operator) {
+			return [checkMsg(v, `Parameter ${v.fullName} has enum validator, but no enumeration found`)];
+		}
+		let value = v.value.toString();
+		if (v._operator.hasOwnProperty(value)) {
+			return [null, value];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
+	},
+	any (v) {
+		return [null, v.value];
+	},
+	array (v) {
+		const isa = Array.isArray(v.value);
+		if (v._strict && !isa) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be array`)];
+		}
+		let val;
+		if (isa) {
+			val = v.value;
+		} else {
+			try {
+				val = JSON.parse(v.value);
+			} catch (err) {
+				return [checkMsg(v, `Parameter ${v.fullName} is not valid json array, found ${v.value}`)];
+			}
+		}
+		if (v._exact && val.length != v._exact) {
+			return [checkMsg(v, `Parameter ${v.fullName} must contain exactly ${v._exact} elements, but ${val.length} found`)];
+		}
+		if (v._min && val.length < v._min) {
+			return [checkMsg(v, `Parameter ${v.fullName} must contain at least ${v._min} elements, but ${val.length} found`)];
+		}
+		if (v._max && val.length > v._max) {
+			return [checkMsg(v, `Parameter ${v.fullName} must contain no more than ${v._max} elements, but ${val.length} found`)];
+		}
+		return [null, val];
+	}
+};
+
 let Validator = function (base = null, src = null, pre = null, omit = false, gmap = null) {
     let self = this;
 	
@@ -44,161 +194,7 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
 	self.getBase = () => {
 		return self.base;
 	};
-
-	const PostProcessors = {
-		string (v, val) {
-			if (v._toUpperCase) {
-				val = val.toUpperCase();
-			}
-			if (v._toLowerCase) {
-				val = val.toLowerCase();
-			}
-            return val;
-		},
-		regexp (v, val) {
-			return this.string(v, val);
-		}
-	};
 	
-    const Validators = {
-        int (v) {
-			if (v._strict && typeof(v.value) !== 'number') {
-				return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
-			}
-            if (!/[0-9]+/.test(v.value.toString())) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be int, but ${v.value} found`)];
-            }
-            v.value = parseInt(v.value);
-            if (v._unsigned && v.value < 0) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be unsigned int, but ${v.value} found`)];
-            }
-            if (v._min && v.value < v._min) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
-            }
-            if (v._max && v.value > v._max) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
-            }
-            return [null, v.value];
-        },
-        float (v) {
-			if (v._strict && typeof(v.value) !== 'number') {
-				return [checkMsg(v, `Parameter ${v.fullName}, in strict mode, must be number, but ${v.value} found`)];
-			}
-            if (!/[+-]*([0-9]*[.])?[0-9]+/.test(v.value.toString())) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be float, but ${v.value} found`)];
-            }
-            v.value = parseFloat(v.value);
-            if (v._min && v.value < v._min) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
-            }
-            if (v._max && v.value > v._max) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
-            }
-            return [null, v.value];
-        },
-        string (v) {
-			if (v._strict && typeof(v.value) !== 'string') {
-				return [checkMsg(v, `Parameter ${v.fullName} must be of type string`)];
-			}
-            let val = v.value.toString();
-            if (v._trim) {
-                val = val.trim();
-            }
-            if (v._min && val.length < v._min) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min} chars long, but ${val.length} chars found`)];
-            }
-            if (v._max && val.length > v._max) {
-                return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max} chars long, but ${val.length} chars found`)];
-            }
-			if (v._exact && val.length !== v._exact) {
-				return [checkMsg(v, `Parameter ${v.fullName} must be of length ${v._exact}, but ${val.length} chars found`)];
-			}
-			if (v._uppercase && val !== val.toUpperCase()) {
-				return [checkMsg(v, `Parameter ${v.fullName} must be uppercase`)];
-			}
-			if (v._lowercase && val !== val.toLowerCase()) {
-				return [checkMsg(v, `Parameter ${v.fullName} must be lowercase`)];
-			}
-            return [null, val];
-        },
-        bool (v) {
-			let t = typeof(v.value);
-			if (v._strict && t !== 'boolean') {
-				return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
-			}
-            switch (t) {
-            case "boolean":
-                return [null, v.value];
-                break;
-            case "string":
-                let flags = v._ignorecase ? "i" : "";
-                if (new RegExp("^(true|false)$", flags).test(v.value)) {
-                    return [null, JSON.parse(v.value.toLowerCase())];
-                }
-                break;
-            }
-            return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
-        },
-        func (v) {
-            if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.fullName} has functional validator, but no function found`)];
-            }
-            const res = v._operator(v.value);
-            if (res) {
-                return [null, v.value];
-            }
-            return [checkMsg(v, `Parameter ${v.fullName} doesn't match functional vaidator`)];
-        },
-        regexp (v) {
-            if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.fullName} has regexp validator, but no regular expression found`)];
-            }
-            let [err, str] = Validators.string(v);
-            if (err) {
-                return [err, null];
-            }
-            if (v._operator.test(str)) {
-                return [null, str];
-            }
-            return [checkMsg(v, `Parameter ${v.fullName} doesn't match regexp validator ${v._operator.toString()}`)];
-        },
-		enum (v) {
-			if (!v._operator) {
-                return [checkMsg(v, `Parameter ${v.fullName} has enum validator, but no enumeration found`)];
-            }
-			let value = v.value.toString();
-			if (v._operator.hasOwnProperty(value)) {
-				return [null, value];
-			}
-			return [checkMsg(v, `Parameter ${v.fullName} is not part of ${JSON.stringify(Object.keys(v._operator))} enumeration`)];
-		},
-		array (v) {
-			const isa = Array.isArray(v.value);
-			if (v._strict && !isa) {
-				return [checkMsg(v, `Parameter ${v.fullName} must be array`)];
-			}
-			let val;
-			if (isa) {
-				val = v.value;
-			} else {
-				try {
-					val = JSON.parse(v.value);
-				} catch (err) {
-					return [checkMsg(v, `Parameter ${v.fullName} is not valid json array, found ${v.value}`)];
-				}
-			}
-			if (v._exact && val.length != v._exact) {
-				return [checkMsg(v, `Parameter ${v.fullName} must contain exactly ${v._exact} elements, but ${val.length} found`)];
-			}
-			if (v._min && val.length < v._min) {
-				return [checkMsg(v, `Parameter ${v.fullName} must contain at least ${v._min} elements, but ${val.length} found`)];
-			}
-			if (v._max && val.length > v._max) {
-				return [checkMsg(v, `Parameter ${v.fullName} must contain no more than ${v._max} elements, but ${val.length} found`)];
-			}
-			return [null, val];
-		}
-    };
     self.Validators = Validators;
 
     self.separator = globalOptions.separator;
