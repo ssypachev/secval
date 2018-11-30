@@ -32,7 +32,7 @@ app.post('/users', async (req, res) => {
             .arg('latitude').optional.float
             .arg('longitude').optional.float            
         .end
-		.compounder.allOrNothing('location.latitude', 'location.longitude')
+	.compound.allOrNothing('location.latitude', 'location.longitude')
         .build();
     if (err) {
         res.status(400).send({ error: err });
