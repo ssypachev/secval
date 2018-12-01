@@ -301,6 +301,10 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
             self.validate(item);
         });
     };
+	
+	self.setOption = function (v, result) {
+		self.options[v._as ? v._as : v.name] = result;
+	};
 
     self.validate = (v) => {
         if (v.type === null) {
@@ -313,7 +317,7 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
 				self.errs.push(err);
 			}
 			if (result !== null && err !== undefined) {
-				self.options[v.name] = result;
+				self.setOption(v, result);
 			}
 			return;
 		}
@@ -340,7 +344,7 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
 			if (PostProcessors.hasOwnProperty(v.type)) {
 				result = PostProcessors[v.type](v, result);
 			}
-            self.options[v.name] = result;
+            self.setOption(v, result);
         }
     };
 
@@ -642,6 +646,11 @@ let Variable = function (parent, name, value) {
 			return self.name;
 		}
 	});
+	
+	self.as = function (name) {
+		self._as = name;
+		return self;
+	}
 }
 
 module.exports.Validator = Validator;
