@@ -179,7 +179,7 @@ const Validators = {
 	}
 };
 
-let Validator = function (base = null, src = null, pre = null, omit = false, gmap = null) {
+let Validator = function ({ base = null, src = null, pre = null, omit = false, gmap = null } = {}) {
     let self = this;
 	
 	self.base = base;
@@ -321,20 +321,21 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
 			}
 			return;
 		}
+		
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
                 if (isDef(v._default)) {
                     v.value = v._default;
-                    [err, result] = Validators[v.type](v);
+                    [err, result] = v.validate();
                 }
             } else {
-				[err, result] = Validators[v.type](v);
+				[err, result] = v.validate();
 			}
         } else {
             if (!isDef(v.value)) {
                 err = `Parameter ${v.fullName} required, but nothing found`;
             } else {
-                [err, result] = Validators[v.type](v);
+                [err, result] = v.validate();
             }
         }
         if (isDef(err)) {
@@ -355,11 +356,16 @@ let Validator = function (base = null, src = null, pre = null, omit = false, gma
     });
 }
 
-let Compounder = function (parent) {
-    let self = this;
+let ValidatorItem = function (parent) {
+	this.parent = parent;
+	this.build  = parent.build;
+	this.arg    = parent.arg;
+	this.with   = parent.with;
+}
 
-    self.parent = parent;
-    self.build  = parent.build;
+let Compounder = function (parent) {
+	ValidatorItem.call(this, parent);
+    let self = this;
 
     const setError = (err) => {
         self.parent.errs.push(err);
@@ -443,28 +449,28 @@ let Compounder = function (parent) {
         return self;
     }
 }
+Compounder.prototype = ValidatorItem.prototype;
 
 let Variable = function (parent, name, value) {
+	ValidatorItem.call(this, parent);
     let self = this;
 
-    self.parent  = parent;
     self.name    = name;
     self.value   = value;
-    self.type    = null;
+    self.type    = 'any';
     self.message = null;
     self.wasSet  = false;
+	self.iterable = false;
 	
 	self.fullName = () => {
 		const path = self.parent.getBase();
-			if (path) {
-				return path + "." + self.name;
-			}
-			return self.name;
+		if (path) {
+			return path + "." + self.name;
+		}
+		return self.name;
 	};
 	
-	//make global name map reference
 	self.parent.gmap[self.fullName()] = self;
-	
     if (isDef(value)) {
         self.wasSet = true;
     }
@@ -481,14 +487,10 @@ let Variable = function (parent, name, value) {
     self._operator = undefined;
 	self._exact = undefined;
     */
-
-    self.arg = self.parent.arg;
-
-    self.build = () => {
-        return self.parent.build();
-    }
-
-    self.with = self.parent.with;
+	
+	self.validate = () => {
+		return Validators[self.type](self);
+	}
 
     self.trace = () => {
         self.parent.trace();
@@ -595,7 +597,16 @@ let Variable = function (parent, name, value) {
             return self.parent.compound;
         }
     });
-    ["trim", "unsigned", "strict", "ignorecase", "toLowerCase", "toUpperCase", 'uppercase', 'lowercase'].forEach(name => {
+    [
+		"trim", 
+		"unsigned", 
+		"strict", 
+		"ignorecase", 
+		"toLowerCase", 
+		"toUpperCase", 
+		"uppercase", 
+		"lowercase"
+	].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {
                 self[`_${name}`] = true;
@@ -627,7 +638,13 @@ let Variable = function (parent, name, value) {
 			if (self.omit === true) {
 				newOmit = true;
 			}
-			let nv = new Validator(base ? base + "." + self.name : self.name, newSrc, self.parent, newOmit, self.parent.gmap);
+			let nv = new Validator({
+				base: (base ? base + "." + self.name : self.name), 
+				src:  newSrc, 
+				pre:  self.parent, 
+				omit: newOmit, 
+				gmap: self.parent.gmap
+			});
 			self._operator = nv;
 			return nv;
 		}
@@ -652,6 +669,7 @@ let Variable = function (parent, name, value) {
 		return self;
 	}
 }
+Variable.prototype = ValidatorItem.prototype;
 
 module.exports.Validator = Validator;
 
