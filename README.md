@@ -75,6 +75,6 @@ https://github.com/ssypachev/secval/wiki
 
 ## Dependencies and testing
 
-Library does not have any dependencies for production use. For testing `mocha` and `chai` is used. To test call
+Library does not have any dependencies for production use. For testing `mocha`, `chai` and `uuid` is used. To test call
 
 `npm run test`
