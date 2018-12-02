@@ -33,6 +33,9 @@ const PostProcessors = {
 	},
 	regexp (v, val) {
 		return this.string(v, val);
+	},
+	uuid (v, val) {
+		return this.string(v, val);
 	}
 };
 
@@ -176,6 +179,29 @@ const Validators = {
 			return [checkMsg(v, `Parameter ${v.fullName} must contain no more than ${v._max} elements, but ${val.length} found`)];
 		}
 		return [null, val];
+	},
+	uuid (v) {
+		let [err, str] = Validators.string(v);
+		if (err) {
+			return [err, null];
+		}
+		let version;
+		if (v._v1) {
+			version = 1;
+		} else if (v._v3) {
+			version = 3;
+		} else if (v._v4) {
+			version = 4;
+		} else if (v._v5) {
+			version = 5;
+		} else {
+			throw TypeError(`Validator error: undefined version for uuid validator. Use v1, v3, v4 or v5`);
+		}
+		let reg = new RegExp('^[0-9A-F]{8}-[0-9A-F]{4}-' + version + '[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$', "i");
+		if (reg.test(str)) {
+			return [null, str];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} is not valid UUID V${version} string`)];
 	}
 };
 
@@ -605,7 +631,11 @@ let Variable = function (parent, name, value) {
 		"toLowerCase", 
 		"toUpperCase", 
 		"uppercase", 
-		"lowercase"
+		"lowercase",
+		"v1",
+		"v3",
+		"v4",
+		"v5"
 	].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {

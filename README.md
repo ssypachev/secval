@@ -29,7 +29,7 @@ Another one
 app.post('/api/v1/offices/:ouid/profiles', loginHelper.isLoggedInAndOfficeOwner, async (req, res) => {
     const [err, options] = new Validator()
         .with(req.params)
-            .arg('ouid').required.string
+            .arg('ouid').required.uuid.v4
         .with(req.body)
             .arg('name').required.string
             .arg('printerName').required.string
