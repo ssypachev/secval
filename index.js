@@ -185,7 +185,7 @@ const Validators = {
 		if (err) {
 			return [err, null];
 		}
-		let version;
+		let version, errcode;
 		if (v._v1) {
 			version = 1;
 		} else if (v._v3) {
@@ -195,13 +195,13 @@ const Validators = {
 		} else if (v._v5) {
 			version = 5;
 		} else {
-			throw TypeError(`Validator error: undefined version for uuid validator. Use v1, v3, v4 or v5`);
+			version = '[0-9a-f]';
 		}
 		let reg = new RegExp('^[0-9A-F]{8}-[0-9A-F]{4}-' + version + '[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$', "i");
 		if (reg.test(str)) {
 			return [null, str];
 		}
-		return [checkMsg(v, `Parameter ${v.fullName} is not valid UUID V${version} string`)];
+		return [checkMsg(v, `Parameter ${v.fullName} is not valid UUID ${typeof(version) === 'number' ? 'V' + version + " " : ""}string`)];
 	}
 };
 
