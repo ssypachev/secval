@@ -653,7 +653,7 @@ let Variable = function (parent, name, value) {
 			if (self._optional) {
 				if (isDef(self._default)) {
 					self.value = self._default;
-				} else {					
+				} else if (!isDef(self.value)) {					
 					newOmit = true;
 				}
 			}
