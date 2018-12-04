@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const checkMsg = (v, stdMsg) => {
     if (v._message) {
         return v._message;
@@ -202,6 +204,30 @@ const Validators = {
 			return [null, str];
 		}
 		return [checkMsg(v, `Parameter ${v.fullName} is not valid UUID ${typeof(version) === 'number' ? 'V' + version + " " : ""}string`)];
+	},
+	datetime (v) {
+		const [fmt, strict] = v._operator ? [v._operator, true] : [undefined, false];
+		if (!moment(v.value, fmt, strict).isValid()) {
+			return [checkMsg(v, `Parameter ${v.fullName} is not valid datetime`)];
+		}
+		
+		const m = moment(v.value, fmt, strict);
+		if (v._min) {
+			const tmin = moment(v._min, fmt, strict);
+			if (m.isBefore(tmin)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be after ${tmin.toString()}, but ${m.toString()} found`)];
+			}
+		}
+		if (v._max) {
+			const tmax = moment(v._max, fmt, strict);
+			if (m.isAfter(tmax)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be before ${tmax.toString()}, but ${m.toString()} found`)];
+			}
+		}
+		if (v._js) {
+			return [null, m.toDate()];
+		}
+		return [null, m];
 	}
 };
 
@@ -601,6 +627,10 @@ let Variable = function (parent, name, value) {
         self._operator = proc;
         return self;
     };
+	self.format = (fmt) => {
+		self._operator = fmt;
+		return self;
+	};
 	self.enumeration = (...args) => {
 		let data;
 		if (args.length === 1) {
@@ -635,7 +665,8 @@ let Variable = function (parent, name, value) {
 		"v1",
 		"v3",
 		"v4",
-		"v5"
+		"v5",
+		"js"
 	].forEach(name => {
         Object.defineProperty(self, name, {
             get: () => {
