@@ -75,6 +75,6 @@ https://github.com/ssypachev/secval/wiki
 
 ## Dependencies and testing
 
-Library does not have any dependencies for production use. For testing `mocha`, `chai` and `uuid` is used. To test call
+Library depends on `moment.js`. For testing `mocha`, `chai` and `uuid` is used. To test call
 
 `npm run test`
