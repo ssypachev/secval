@@ -17,4 +17,13 @@ describe("Should test any validator", () => {
 		chai.expect(options.a).to.deep.equal(["a", 1, {}]);
 	});
 	
+	it ("Should fail on required", () => {
+		let arg = {};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').required.any.build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 });
