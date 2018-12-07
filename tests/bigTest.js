@@ -19,6 +19,7 @@ describe("Should test array validator", () => {
 			.arg('deviceId').required.string
 			.compound.allOrNothing('latitude', 'longitude').build();
 		
+		chai.expect(err).not.to.be.null;
 	});
 	
 });
