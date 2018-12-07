@@ -24,6 +24,16 @@ const array2set = (arr) => {
 };
 
 const PostProcessors = {
+	array (v, val) {
+		if (v._sort) {
+			if (typeof(v._sort) === 'boolean') {
+				val.sort();
+			} else {
+				val.sort(v._sort);
+			}
+		}
+		return val;
+	},
 	string (v, val) {
 		if (v._toUpperCase) {
 			val = val.toUpperCase();
@@ -644,6 +654,15 @@ let Variable = function (parent, name, value) {
 		}
 		self.type = "enum";
 		self._operator = array2set(data);
+		return self;
+	};
+	
+	self.sort = (func) => {
+		if (typeof(func) !== 'function') {
+			self._sort = true;
+		} else {
+			self._sort = func;
+		}
 		return self;
 	};
 	
