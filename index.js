@@ -394,7 +394,7 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
             self.errs.push(err);
         }
         if (result !== null && err !== undefined) {
-			if (PostProcessors.hasOwnProperty(v.type)) {
+			if (PostProcessors.hasOwnProperty(v.type) && isDef(result)) {
 				result = PostProcessors[v.type](v, result);
 			}
             self.setOption(v, result);
@@ -647,7 +647,6 @@ let Variable = function (parent, name, value) {
 		return self;
 	};
 	
-	//Properties
 	Object.defineProperty(self, "compound", {
         get: () => {
             return self.parent.compound;
