@@ -2,6 +2,32 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe("Should test array validator", () => {
+	
+	it ("Should test sort property", () => {
+		let arg = {
+			a: [1,3,2]
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg("a").required.array.sort().build();
+		
+		chai.expect(options.a).to.be.an('array');
+		chai.expect(options.a).to.deep.equal([1,2,3]);
+	});
+	
+	it ("Should test sort function", () => {
+		let arg = {
+			a: ["1","3","2"]
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg("a").required.array.sort((a, b) => {
+			return ( a < b ? -1 : ( a > b ? 1 : 0 ) ); 
+		}).build();
+		
+		chai.expect(options.a).to.be.an('array');
+		chai.expect(options.a).to.deep.equal(["1","2","3"]);
+	});
 
     it ("Should test valid array", () => {
 		let arg = {

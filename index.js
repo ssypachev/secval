@@ -24,6 +24,16 @@ const array2set = (arr) => {
 };
 
 const PostProcessors = {
+	array (v, val) {
+		if (v._sort) {
+			if (typeof(v._sort) === 'boolean') {
+				val.sort();
+			} else {
+				val.sort(v._sort);
+			}
+		}
+		return val;
+	},
 	string (v, val) {
 		if (v._toUpperCase) {
 			val = val.toUpperCase();
@@ -495,6 +505,23 @@ let Compounder = function (parent) {
 		}
 		return self;
 	}
+	
+	self.func = (names, fun) => {
+		if (!Array.isArray(names)) {
+			throw new TypeError(`Compounder error: func compounder requires first argument to be array`);
+		}
+		if (typeof(fun) !== 'function') {
+			throw new TypeError(`Compounder error: func compounder requires second argument to be function`);
+		}
+		let fa = [];
+		for (let name of names) {
+			fa.push(parent.gmap[name].value);
+		}
+		if (!fun.apply(self, fa)) {
+			setError(checkMsg(self, `${fa} arguments do[es] not satisfy functional compounder`));
+		}
+		return self;
+	}
 
     self.message = (message) => {
         self._message = message;
@@ -514,15 +541,16 @@ let Variable = function (parent, name, value) {
     self.wasSet  = false;
 	self.iterable = false;
 	
-	self.fullName = () => {
+	self.xfullName = () => {
 		const path = self.parent.getBase();
+		const tmp = self._as ? self._as : self.name;
 		if (path) {
-			return path + "." + self.name;
+			return path + "." + tmp;
 		}
-		return self.name;
+		return tmp;
 	};
 	
-	self.parent.gmap[self.fullName()] = self;
+	self.parent.gmap[self.xfullName()] = self;
     if (isDef(value)) {
         self.wasSet = true;
     }
@@ -647,6 +675,15 @@ let Variable = function (parent, name, value) {
 		return self;
 	};
 	
+	self.sort = (func) => {
+		if (typeof(func) !== 'function') {
+			self._sort = true;
+		} else {
+			self._sort = func;
+		}
+		return self;
+	};
+	
 	Object.defineProperty(self, "compound", {
         get: () => {
             return self.parent.compound;
@@ -698,8 +735,9 @@ let Variable = function (parent, name, value) {
 			if (self.omit === true) {
 				newOmit = true;
 			}
+			const tmp = self._as ? self._as : self.name;
 			let nv = new Validator({
-				base: (base ? base + "." + self.name : self.name), 
+				base: (base ? base + "." + tmp : tmp), 
 				src:  newSrc, 
 				pre:  self.parent, 
 				omit: newOmit, 
@@ -717,15 +755,18 @@ let Variable = function (parent, name, value) {
 	Object.defineProperty(self, 'fullName', {
 		get: () => {
 			const path = self.parent.getBase();
+			const tmp = self._as ? self.as : self.name;
 			if (path) {
-				return path + "." + self.name;
+				return path + "." + tmp;
 			}
-			return self.name;
+			return tmp;
 		}
 	});
 	
 	self.as = function (name) {
 		self._as = name;
+		console.log(self.xfullName());
+		self.parent.gmap[self.xfullName()] = self;
 		return self;
 	}
 }
