@@ -1,4 +1,5 @@
 const moment = require('moment');
+const EmailValidator = require('email-validator');
 
 const checkMsg = (v, stdMsg) => {
     if (v._message) {
@@ -238,6 +239,16 @@ const Validators = {
 			return [null, m.toDate()];
 		}
 		return [null, m];
+	},
+	email (v) {
+		let [err, str] = Validators.string(v);
+		if (err) {
+			return [err, null];
+		}
+		if (EmailValidator.validate(str)) {
+			return [null, str];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} must be valid email`)];
 	}
 };
 
