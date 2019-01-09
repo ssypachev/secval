@@ -16,8 +16,9 @@ app.post('/users', async (req, res) => {
         .arg('location').optional.object
             .arg('latitude').optional.float
             .arg('longitude').optional.float
-            .compound.allOrNothing('latitude', 'longitude').build();
-        .end        
+        .compound.allOrNothing('location.latitude', 'location.longitude')
+		.build();
+
     if (err) {
         res.status(400).send({ error: err });
     }
@@ -75,6 +76,6 @@ https://github.com/ssypachev/secval/wiki
 
 ## Dependencies and testing
 
-Library depends on `moment.js`. For testing `mocha`, `chai` and `uuid` is used. To test call
+Library depends on `moment.js` and `email-validator`. For testing `mocha`, `chai` and `uuid` is used. To test call
 
 `npm run test`

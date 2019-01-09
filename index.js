@@ -49,6 +49,9 @@ const PostProcessors = {
 	},
 	uuid (v, val) {
 		return this.string(v, val);
+	},
+	email (v, val) {
+		return this.string(v, val);
 	}
 };
 

@@ -3,6 +3,7 @@
   "version": "1.6.0",
   "description": "",
   "main": "index.js",
+  "repository": "https://github.com/ssypachev/secval/wiki",
   "directories": {
     "test": "tests"
   },

@@ -28,4 +28,49 @@ describe("Should test email validator", () => {
 		chai.expect(err).not.to.be.null;
 	});
 	
+	it ("Should use string pre-processing", () => {
+		let arg = {
+			a: ' test@mail.com '
+		};
+
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').required.email.trim.build();
+		
+		chai.expect(options.a).to.equal('test@mail.com');
+		chai.expect(err).to.be.null;
+	});
+	
+	it ("Should use string post-processing", () => {
+		let arg = {
+			a: 'test@mail.com'
+		};
+
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').required.email.toUpperCase.build();
+		
+		chai.expect(options.a).to.equal('TEST@MAIL.COM');
+		chai.expect(err).to.be.null;
+	});
+	
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
