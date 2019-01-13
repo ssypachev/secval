@@ -16,6 +16,7 @@ app.post('/users', async (req, res) => {
         .arg('location').optional.object
             .arg('latitude').optional.float
             .arg('longitude').optional.float
+		.end
         .compound.allOrNothing('location.latitude', 'location.longitude')
 		.build();
 

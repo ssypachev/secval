@@ -52,6 +52,9 @@ const PostProcessors = {
 	},
 	email (v, val) {
 		return this.string(v, val);
+	},
+	password (v, val) {
+		return this.string(v, val);
 	}
 };
 
@@ -252,6 +255,42 @@ const Validators = {
 			return [null, str];
 		}
 		return [checkMsg(v, `Parameter ${v.fullName} must be valid email`)];
+	},
+	password (v) {
+		let [err, str] = Validators.string(v);
+		if (err) {
+			return [err, null];
+		}
+		let variant = 0x001;
+		if (v._upperlower) {
+			variant |= 0x010;
+		}
+		if (v._specialchars) {
+			variant |= 0x100;
+		}
+		switch (variant) {
+		case 0x001: //alphanumeric
+			if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/.test(str)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be alphanumeric password`)];
+			}
+			break;
+		case 0x011: //alphanumeric and lowerupper
+			if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]+$/.test(str)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be alphanumeric password with uppercase and lowercase letters`)];
+			}
+			break;
+		case 0x101: //alphanumeric with special chars
+			if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/.test(str)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be alphanumeric password with special characters`)];
+			}
+			break;
+		case 0x111: //alphanumeric and lowerupper, with special chars
+			if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/.test(str)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be alphanumeric password with uppercase and lowercase letters and special characters`)];
+			}
+			break;
+		}
+		return [null, str];
 	}
 };
 
@@ -712,6 +751,8 @@ let Variable = function (parent, name, value) {
 		"toUpperCase", 
 		"uppercase", 
 		"lowercase",
+		"upperlower",
+		"specialchars",
 		"v1",
 		"v3",
 		"v4",
