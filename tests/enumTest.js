@@ -5,21 +5,21 @@ describe("Should test enum validator", () => {
 
     it ("Should test valid", () => {
 		let [err, options] = new Validator()
-		.arg("a", "one").required.enumeration("one", "two", "three").build();
+		.arg("a", "one").required.enum("one", "two", "three").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.equal("one");
 		
 		[err, options] = new Validator()
-		.arg("a", "two").required.enumeration(["one", "two", "three"]).build();
+		.arg("a", "two").required.enum(["one", "two", "three"]).build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.equal("two");
 		
 		[err, options] = new Validator()
-		.arg("a", "one").required.enumeration({"one": true, "two": true, "three": true}).build();
+		.arg("a", "one").required.enum({"one": true, "two": true, "three": true}).build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -39,7 +39,7 @@ describe("Should test enum validator", () => {
 	
 	it ("Should test fail", () => {
 		let [err, options] = new Validator()
-		.arg("a", "five").required.enumeration("one", "two", "three").build();
+		.arg("a", "five").required.enum("one", "two", "three").build();
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;

@@ -9,7 +9,7 @@ describe("Should test regexp validator", () => {
         };
         let [err, options] = new Validator()
         .with(arg)
-        .arg("a").required.regular(/ett/i).build();
+        .arg("a").required.regexp(/ett/i).build();
 
         chai.expect(err).to.be.null;
         chai.expect(options).not.to.be.null;
@@ -30,7 +30,7 @@ describe("Should test regexp validator", () => {
         };
         let [err, options] = new Validator()
         .with(arg)
-        .arg("a").required.regular(/ett/i).build();
+        .arg("a").required.regexp(/ett/i).build();
 
         chai.expect(err).not.to.be.null;
         chai.expect(options).to.be.null;
@@ -42,7 +42,7 @@ describe("Should test regexp validator", () => {
         };
         let [err, options] = new Validator()
         .with(arg)
-        .arg("a").required.regular(/ett/i).min(1).max(10).build();
+        .arg("a").required.regexp(/ett/i).min(1).max(10).build();
 
         chai.expect(err).to.be.null;
         chai.expect(options).not.to.be.null;
@@ -50,7 +50,7 @@ describe("Should test regexp validator", () => {
 
         [err, options] = new Validator()
         .with(arg)
-        .arg("a").required.regular(/ett/i).between(1, 10).build();
+        .arg("a").required.regexp(/ett/i).between(1, 10).build();
 
         chai.expect(err).to.be.null;
         chai.expect(options).not.to.be.null;
@@ -59,7 +59,7 @@ describe("Should test regexp validator", () => {
 
     it ("Should test invalid, with string validators", () => {
         let [err, options] = new Validator()
-        .arg("a", "letter").required.regular(/ett/i).min(100).build();
+        .arg("a", "letter").required.regexp(/ett/i).min(100).build();
 
         chai.expect(err).not.to.be.null;
         chai.expect(options).to.be.null;
@@ -71,7 +71,7 @@ describe("Should test regexp validator", () => {
         };
         let [err, options] = new Validator()
         .with(arg)
-        .arg("a").required.regular(/ett/i).toUpperCase.build();
+        .arg("a").required.regexp(/ett/i).toUpperCase.build();
 		
 		chai.expect(options.a).to.equal('LETTER');
 	});
