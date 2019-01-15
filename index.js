@@ -55,7 +55,25 @@ const PostProcessors = {
     },
     password (v, val) {
         return this.string(v, val);
-    }
+    },
+	decimal (v, val) {
+		if (v.padEnd) {
+			const [L, R] = v._operator;
+			let [left, right] = val.split(/[.,]/);
+			while (right.length < R) {
+				right += '0';
+			}
+			const sep = /[.]/.test(val) ? '.' : ',';
+			val = left + sep + right;
+		}
+		if (v._toDot) {
+			val = val.replace(/[,]/, '.')
+		}
+		if (v._toComma) {
+			val = val.replace(/[.]/, ',')
+		}
+		return val;
+	}
 };
 
 const Validators = {
@@ -291,7 +309,27 @@ const Validators = {
             break;
         }
         return [null, str];
-    }
+    },
+	decimal (v) {
+		const tp = typeof(v.value);
+		if (tp !== 'string') {
+			return [checkMsg(v, `Parameter ${v.fullName} must be decimal string, but ${tp} found`)];
+		}
+		const [L, R] = v._operator;
+		let sep;
+		if (v._dot) {
+			sep = '[.]'
+		} else if (v._comma) {
+			sep = '[,]'
+		} else {
+			sep = '[,.]';
+		}
+		const rs = new RegExp(`^[0]*[+-]?[0-9]{0,${L}}(${sep}[0-9]{0,${R}})?$`);
+		if (rs.test(v.value)) {
+			return [null, v.value];
+		}
+		return [checkMsg(v, `Parameter ${v.fullName} must be decimal string [0]*±[0-9]{0,${L}}(${sep}[0-9]{0,${R}})?`)];
+	}
 };
 
 let Validator = function ({ base = null, src = null, pre = null, omit = false, gmap = null } = {}) {
@@ -618,7 +656,7 @@ let Variable = function (parent, name, value) {
     }
 
     self.ofType = (typeName) => {
-        if (typeof(typeName) === 'string' && self.parent.Validators.hasOwnProperty(typeName)) {
+        if (typeof(typeName) === 'string' && Validators.hasOwnProperty(typeName)) {
             self.type = typeName;
             return self;
         }
@@ -628,12 +666,6 @@ let Variable = function (parent, name, value) {
             return self;
         }
         throw new TypeError(`Variable.ofType error. type name ${typeName} not defined. Use int, string, float, datetime. date, time, bool, regexp`);
-    };
-
-    self.regular = (re) => {
-        self.type = "regexp";
-        self._operator = re;
-        return self;
     };
 
     Object.defineProperty(self, "required", {
@@ -655,14 +687,16 @@ let Variable = function (parent, name, value) {
         }
     });
 
-    Object.keys(self.parent.Validators).forEach(key => {
-        Object.defineProperty(self, key, {
-            get: () => {
-                self.ofType(key);
-                return self;
-            }
-        });
-    });
+    Object.keys(Validators).filter(name => {
+			return name != 'enum' && name != 'regexp' && name != 'decimal';
+		}).forEach(key => {
+			Object.defineProperty(self, key, {
+				get: () => {
+					self.ofType(key);
+					return self;
+				}
+			});
+		});
     ["operator", "default", "message"].forEach(name => {
         self[name] = (value) => {
             self[`_${name}`] = value;
@@ -699,7 +733,17 @@ let Variable = function (parent, name, value) {
         self._operator = fmt;
         return self;
     };
-    self.enumeration = (...args) => {
+	self.regexp = (re) => {
+        self.type = "regexp";
+        self._operator = re;
+        return self;
+    };
+	self.decimal = (L, R) => {
+		self._operator = [L, R];
+		self.type = 'decimal';
+		return self;
+	};
+    self.enum = (...args) => {
         let data;
         if (args.length === 1) {
             if (Array.isArray(args[0])) {
@@ -740,6 +784,12 @@ let Variable = function (parent, name, value) {
         "lowercase",
         "upperlower",
         "specialchars",
+		"dot",
+		"comma",
+		"toDot",
+		"toComma",
+		"padEnd",
+		"cropEnd",
         "v1",
         "v3",
         "v4",
