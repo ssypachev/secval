@@ -1,14 +1,14 @@
 const chai = require('chai'),
 	{ Validator } = require('../index.js');
 	
-describe("Should test boolean validator", () => {
+describe("Should test booleanean validator", () => {
 	
-	it ("Should test valid bool, simple, required", () => {
+	it ("Should test valid boolean, simple, required", () => {
 		let arg = {
 			a: true
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("boolean").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -18,19 +18,19 @@ describe("Should test boolean validator", () => {
 			a: false
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("boolean").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.false;
 	});
 	
-	it ("Should test valid bool alias, simple, required", () => {
+	it ("Should test valid boolean alias, simple, required", () => {
 		let arg = {
 			a: true
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.bool.build();
+		.arg("a").required.boolean.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -40,55 +40,55 @@ describe("Should test boolean validator", () => {
 			a: false
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.bool.build();
+		.arg("a").required.boolean.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.false;
 	});
 	
-	it ("Should test invalid bool, simple, required", () => {
+	it ("Should test invalid boolean, simple, required", () => {
 		let arg = {
 			a: 123
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("boolean").build();
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;
 		console.log(err);
 	});
 	
-	it ("Should test invalid optional bool", () => {
+	it ("Should test invalid optional boolean", () => {
 		let arg = {
 			b: true
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").optional.default("123").ofType("bool").build();
+		.arg("a").optional.default("123").ofType("boolean").build();
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;
 		console.log(err);
 	});
 	
-	it ("Should test valid optional bool", () => {
+	it ("Should test valid optional boolean", () => {
 		let arg = {
 			b: true
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").optional.default(false).ofType("bool").build();
+		.arg("a").optional.default(false).ofType("boolean").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options.a).to.be.false;
 		console.log(err);
 	});
 	
-	it ("Should test string bool, simple, required", () => {
+	it ("Should test string boolean, simple, required", () => {
 		let arg = {
 			a: "true"
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("boolean").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -98,19 +98,19 @@ describe("Should test boolean validator", () => {
 			a: "false"
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").build();
+		.arg("a").required.ofType("boolean").build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.false;
 	});
 	
-	it ("Should test string bool case insensitive, simple, required", () => {
+	it ("Should test string boolean case insensitive, simple, required", () => {
 		let arg = {
 			a: "True"
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").ignorecase.build();
+		.arg("a").required.ofType("boolean").ignorecase.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
@@ -120,19 +120,19 @@ describe("Should test boolean validator", () => {
 			a: "FALSE"
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").ignorecase.build();
+		.arg("a").required.ofType("boolean").ignorecase.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.false;
 	});
 	
-	it ("Should fail test string bool on strict, simple, required", () => {
+	it ("Should fail test string boolean on strict, simple, required", () => {
 		let arg = {
 			a: "True"
 		};
 		let [err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").strict.build();
+		.arg("a").required.ofType("boolean").strict.build();
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;
@@ -141,7 +141,7 @@ describe("Should test boolean validator", () => {
 			a: "true"
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").strict.build();
+		.arg("a").required.ofType("boolean").strict.build();
 		
 		chai.expect(err).not.to.be.null;
 		chai.expect(options).to.be.null;
@@ -150,7 +150,7 @@ describe("Should test boolean validator", () => {
 			a: true
 		};
 		[err, options] = new Validator().with(arg)
-		.arg("a").required.ofType("bool").strict.build();
+		.arg("a").required.ofType("boolean").strict.build();
 		
 		chai.expect(err).to.be.null;
 		chai.expect(options).not.to.be.null;

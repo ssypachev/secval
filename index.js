@@ -137,7 +137,7 @@ const Validators = {
         }
         return [null, val];
     },
-    bool (v) {
+    boolean (v) {
         let t = typeof(v.value);
         if (v._strict && t !== 'boolean') {
             return [checkMsg(v, `Parameter ${v.fullName} must be boolean, hence true or false, but ${v.value} found`)];
@@ -698,7 +698,7 @@ let Variable = function (parent, name, value) {
     });
 
     Object.keys(Validators).filter(name => {
-			return name != 'enum' && name != 'regexp' && name != 'decimal';
+			return name !== 'enum' && name !== 'regexp' && name !== 'decimal';
 		}).forEach(key => {
 			Object.defineProperty(self, key, {
 				get: () => {
