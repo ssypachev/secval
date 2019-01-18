@@ -2,6 +2,16 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe("Should test enum validator", () => {
+	
+	it ("Should test optional null", () => {
+		let arg = {};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').optional.enumeration('a', 'b', 'c').build();
+		
+		chai.expect(err).to.be.null;
+		chai.expect(options).not.to.be.null;
+	});
 
     it ("Should test valid", () => {
 		let [err, options] = new Validator()

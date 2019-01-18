@@ -18,9 +18,9 @@ let isDef = (o) => {
 
 const array2set = (arr) => {
     let out = {};
-    arr.forEach(name => {
+    for (name of arr) {
         out[name] = true;
-    });
+    };
     return out;
 };
 
