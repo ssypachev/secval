@@ -291,7 +291,37 @@ const Validators = {
             break;
         }
         return [null, str];
-    }
+    },
+	decimal (v) {
+		const tp = typeof(v.value);
+		if (tp !== 'string') {
+			return [checkMsg(v, `Parameter ${v.fullName} must be decimal string, but ${tp} found`)];
+		}
+		const [L, R] = v._operator;
+		let sep;
+		if (v._dot) {
+			sep = '[.]'
+		} else if (v._comma) {
+			sep = '[,]'
+		} else {
+			sep = '[,.]';
+		}
+		let [left, right] = v.value.split(new RegExp(sep));
+		if (!right) {
+			right = "";
+		}
+		if (v._cropEnd && right.length > R) {
+			right = right.substr(0, R);
+			v.value = v.value.match(/.*[,.]/)[0] + right;
+		}
+		if (!(new RegExp(`^[0]*[+-]?[0-9]{0,${L}}$`).test(left))) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be decimal(${L}, ${R}), hence contain no more than ${L} digits left to separator, but ${left} found`)];
+		}
+		if (!(new RegExp(`^[0-9]{0,${R}}$`).test(right))) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be decimal(${L}, ${R}), hence contain no more than ${R} digits right to separator, but ${right} found`)];
+		}
+		return [null, v.value];
+	}
 };
 
 let Validator = function ({ base = null, src = null, pre = null, omit = false, gmap = null } = {}) {
