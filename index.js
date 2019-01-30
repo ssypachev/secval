@@ -685,14 +685,17 @@ let Variable = function (parent, name, value) {
         }
     });
 
-    Object.keys(self.parent.Validators).forEach(key => {
-        Object.defineProperty(self, key, {
-            get: () => {
-                self.ofType(key);
-                return self;
-            }
-        });
-    });
+   Object.keys(Validators).filter(name => {
+			return name !== 'enum' && name !== 'regexp' && name !== 'decimal';
+		}).forEach(key => {
+			Object.defineProperty(self, key, {
+				get: () => {
+					self.ofType(key);
+					return self;
+				}
+			});
+		});
+
     ["operator", "default", "message"].forEach(name => {
         self[name] = (value) => {
             self[`_${name}`] = value;
@@ -744,6 +747,11 @@ let Variable = function (parent, name, value) {
         self._operator = array2set(data);
         return self;
     };
+	self.decimal = (L, R) => {
+		self._operator = [L, R];
+		self.type = 'decimal';
+		return self;
+	};
 
     self.sort = (func) => {
         if (typeof(func) !== 'function') {
