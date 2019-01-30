@@ -55,7 +55,25 @@ const PostProcessors = {
     },
     password (v, val) {
         return this.string(v, val);
-    }
+    },
+	decimal (v, val) {
+		if (v._padEnd) {
+			const [L, R] = v._operator;
+			let [left, right] = val.split(/[.,]/);
+			while (right.length < R) {
+				right += '0';
+			}
+			const sep = /[.]/.test(val) ? '.' : ',';
+			val = left + sep + right;
+		}
+		if (v._toDot) {
+			val = val.replace(/[,]/, '.')
+		}
+		if (v._toComma) {
+			val = val.replace(/[.]/, ',')
+		}
+		return val;
+	}
 };
 
 const Validators = {
