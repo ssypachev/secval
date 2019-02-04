@@ -1,3 +1,5 @@
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
 ## SecVal - typed argument validator _primarily_ for Express JS Framework.
 
 This library in beta, though is used in production projects. Main idea is to provide way to validate 
