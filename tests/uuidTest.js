@@ -8,6 +8,14 @@ const chai = require('chai'),
 	
 describe("Should test uuid validators", () => {
 	
+	it ("Should test uuid with bad string options", () => {
+		let x = uuid4();
+		let [err, options] = new Validator()
+		.arg('u', x).required.uuid.v4.max(10).build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should test uuid v4", () => {
 		
 		for (let i = 0; i < 100; i++) {

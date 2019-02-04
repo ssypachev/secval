@@ -22,11 +22,23 @@ describe("Should test array validator", () => {
 		let [err, options] = new Validator()
 		.with(arg)
 		.arg("a").required.array.sort((a, b) => {
-			return ( a < b ? -1 : ( a > b ? 1 : 0 ) ); 
+			return a < b ? -1 : 1; 
 		}).build();
 		
 		chai.expect(options.a).to.be.an('array');
 		chai.expect(options.a).to.deep.equal(["1","2","3"]);
+	});
+	
+	it ("Should test sort non-function", () => {
+		let arg = {
+			a: [1,3,2]
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg("a").required.array.sort("some").build();
+		
+		chai.expect(options.a).to.be.an('array');
+		chai.expect(options.a).to.deep.equal([1,2,3]);
 	});
 
     it ("Should test valid array", () => {
@@ -73,6 +85,16 @@ describe("Should test array validator", () => {
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.an("array");
 		chai.expect(options.a.length).to.equal(3);
+		
+		let wasErr = false;
+		try {
+			[err, options] = new Validator()
+			.with(arg)
+			.arg("a").required.array.between(3,1).build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
 	});
 	
 	it ("should test exact number of items in array", () => {
@@ -87,6 +109,21 @@ describe("Should test array validator", () => {
 		chai.expect(options).not.to.be.null;
 		chai.expect(options.a).to.be.an("array");
 		chai.expect(options.a.length).to.equal(8);
+	});
+	
+	it ("should throw err on signed exactly value", () => {
+		let arg = {
+			a: [1,2,3,4,5,6,7,8]
+		};
+		let wasErr = false;
+		try {
+			let [err, options] = new Validator()
+			.with(arg)
+			.arg("a").required.array.exactly(-1).build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
 	});
 	
 	it ("should test exact number of items in invalid array", () => {

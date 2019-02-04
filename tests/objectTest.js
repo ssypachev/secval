@@ -23,7 +23,8 @@ describe("Should test object validator", () => {
         .end
         .arg("c").required.string
         .build();
-        console.log(options);
+        
+		chai.expect(options).not.to.be.null;
     });
 
     it ("Should fail with bad type", () => {

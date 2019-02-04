@@ -27,10 +27,10 @@ const array2set = (arr) => {
 const PostProcessors = {
     array (v, val) {
         if (v._sort) {
-            if (typeof(v._sort) === 'boolean') {
-                val.sort();
-            } else {
+            if (typeof(v._sort) === 'function') {
                 val.sort(v._sort);
+            } else {
+                val.sort();
             }
         }
         return val;
@@ -372,11 +372,6 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
         return self;
     };
 
-    self.setGlobal = (name, value) => {
-        globalOptions[name] = value;
-        return self;
-    };
-
     self.arg1 = (name) => {
         if (self._curSrc === null) {
             throw new ReferenceError("Validator.arg(a). Current source wasn't defined. Please, first define source with 'with' method");
@@ -402,12 +397,10 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
     self.arg = function () {
         const argsLen = arguments.length;
         switch (argsLen) {
-        case 1: //with source
+        case 1:
             return self.arg1.apply(self, arguments);
-            break;
-        case 2: //name value
+        case 2:
             return self.arg2.apply(self, arguments);
-            break;
         default:
             throw new TypeError(`Validator.arg error. Method defined for 1 and 2 arguments, but ${argsLen} found`);
         }
@@ -455,10 +448,6 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
         return self.internalBuild();
     };
 
-    self.arguments = () => {
-        return self.arguments;
-    };
-
     self.validateAll = () => {
         Object.values(self.args).forEach((item) => {
             self.validate(item);
@@ -470,9 +459,6 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
     };
 
     self.validate = (v) => {
-        if (v.type === null) {
-            throw new TypeError("Can not validate untyped argument");
-        }
         let err, result;
         if (v.type === 'object') {
             [err, result] = v._operator.internalBuild();
@@ -704,7 +690,7 @@ let Variable = function (parent, name, value) {
     });
 
    Object.keys(Validators).filter(name => {
-            return name !== 'enum' && name !== 'regexp' && name !== 'decimal';
+            return name !== 'enum' && name !== 'regexp' && name !== 'decimal' && name !== 'func';
         }).forEach(key => {
             Object.defineProperty(self, key, {
                 get: () => {
@@ -743,7 +729,10 @@ let Variable = function (parent, name, value) {
         return self;
     };
     self.func = (proc) => {
-        self._operator = proc;
+		self.type = 'func';
+		if (typeof(proc) === 'function') {
+			self._operator = proc;
+		}
         return self;
     };
     self.format = (fmt) => {

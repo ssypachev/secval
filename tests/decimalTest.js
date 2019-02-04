@@ -2,6 +2,17 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe("Should test decimal", () => {
+	
+	it ("Should fail on not string", () => {
+        let arg = {
+            a: 123
+        };
+        let [err, options] = new Validator()
+        .with(arg)
+        .arg('a').required.decimal(3,3).build();
+
+        chai.expect(err).not.to.be.null;
+    });
 
     it ("Should test valid", () => {
         let arg = {

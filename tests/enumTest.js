@@ -3,6 +3,17 @@ const chai = require('chai'),
 
 describe("Should test enum validator", () => {
 	
+	it ("Should fail on undefined operator", () => {
+		let arg = {
+			a: "a"
+		};
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').required.ofType('enum').build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should test optional null", () => {
 		let arg = {};
 		let [err, options] = new Validator()

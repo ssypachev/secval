@@ -3,6 +3,96 @@ const chai = require('chai'),
 	
 describe("Should test any validator", () => {
 	
+	it ("Should throw on undefined source", () => {
+		let wasErr = false;
+		let arg = {
+			
+		};
+		try {
+			new Validator().arg('a').required.int.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should throw on duplicate entry arg1", () => {
+		let wasErr = false;
+		let arg = {
+			
+		};
+		try {
+			new Validator().with(arg).arg('a').arg('a').required.int.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should throw on duplicate entry arg2", () => {
+		let wasErr = false;
+		try {
+			new Validator().arg('a', 1).arg('a', 2).required.int.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should throw on bad number of arg arguments (>2)", () => {
+		let wasErr = false;
+		try {
+			new Validator().arg('a', 'b', 'c').required.int.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should throw on bad number of arg arguments (0)", () => {
+		let wasErr = false;
+		try {
+			new Validator().arg().required.int.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should test trace", () => {
+		new Validator().arg('a', 1).required.int.trace().build();
+	});
+	
+	it ("Should test err for undefined type", () => {
+		let wasErr = false;
+		try {
+			new Validator().arg('a', 1).required.ofType('nyc mocha').build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should test err for both required and optional", () => {
+		let wasErr = false;
+		try {
+			new Validator().arg('a', 1).required.optional.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+		
+		wasErr = false;
+		
+		wasErr = false;
+		try {
+			new Validator().arg('a', 1).optional.required.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
 	it ("Should test", () => {
 		let [err, options] = new Validator()
 		.arg('a', ["a", 1, {}]).required.any.build();

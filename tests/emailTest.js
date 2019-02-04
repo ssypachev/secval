@@ -28,6 +28,18 @@ describe("Should test email validator", () => {
 		chai.expect(err).not.to.be.null;
 	});
 	
+	it ("Should test invalid string", () => {
+		let arg = {
+			a: 'testtest@mail.com'
+		};
+
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').required.email.max(10).build();
+
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should use string pre-processing", () => {
 		let arg = {
 			a: ' test@mail.com '

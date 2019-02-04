@@ -131,6 +131,65 @@ describe("Should test compounder", () => {
 		chai.expect(err).to.be.null;
 	});
 	
+	it ("Should throw err on exact with bad args", () => {
+		let arg = {
+			
+		};
+		let wasErr = false;
+		try {
+			new Validator()
+			.with(arg)
+			.arg("a", 5).optional.default(100).int
+			.arg("b").optional.default(100).int
+			.arg("c", 7).optional.default(100).int
+			.compound
+			.exact(5, 'a', 'b', 'c')
+			.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("should test atLeast compounder, throw err on bad arguments", () => {
+		let arg = {
+			
+		};
+		let wasErr = false;
+		try {
+			new Validator()
+				.with(arg)
+				.arg("a").optional.default(100).int
+				.arg("b").optional.default(100).int
+				.arg("c", 7).optional.default(100).int
+				.compound
+				.atLeast(7, 'a', 'b', 'c')
+				.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
+	it ("Should test ifArgSet with bad set of arguments", () => {
+		let arg = {
+			
+		};
+		let wasErr = false;
+		try {
+			new Validator()
+				.with(arg)
+				.arg("a").optional.default(100).int
+				.arg("b").optional.default(100).int
+				.compound
+				.any('a', 'b', 'c')
+				.build();
+		} catch (e) {
+			wasErr = true;
+		}
+		chai.expect(wasErr).to.be.true;
+	});
+	
 	it ("should test any and atLeast compounder, fail", () => {
 		let arg = {
 			
