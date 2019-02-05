@@ -3,6 +3,13 @@ const chai = require('chai'),
 	
 describe("Should test func validator", () => {
 	
+	it ("Should fail with undefined operator", () => {
+		let [err, options] = new Validator()
+		.arg("a", 2).required.ofType("func").message("Value must be even").build();
+		
+		chai.expect(err).not.to.be.null;
+	});
+	
 	it ("Should test simple func", () => {
 		let [err, options] = new Validator()
 		.arg("a", 2).required.ofType((a) => {

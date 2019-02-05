@@ -103,7 +103,7 @@ describe("Should test decimal", () => {
         chai.expect(err).not.to.be.null;
     });
 
-    it ("Should test valid, pad end", () => {
+    it ("Should test valid, pad end both dot and comma", () => {
         let arg = {
             a: "123,456"
         };
@@ -113,6 +113,16 @@ describe("Should test decimal", () => {
 
         chai.expect(err).to.be.null;
         chai.expect(options.a).to.equal("123,4560000");
+		
+		arg = {
+            a: "123.456"
+        };
+		[err, options] = new Validator()
+        .with(arg)
+        .arg('a').required.decimal(3,7).padEnd.build();
+
+        chai.expect(err).to.be.null;
+        chai.expect(options.a).to.equal("123.4560000");
     });
 
     it ("Should test valid, crop end", () => {

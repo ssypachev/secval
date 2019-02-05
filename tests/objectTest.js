@@ -75,6 +75,20 @@ describe("Should test object validator", () => {
         chai.expect(err).to.be.null;
         console.log(options);
     });
+	
+	it ("Should win with optional not default", () => {
+        let arg = {
+
+        };
+
+        let [err, options] = new Validator()
+        .with(arg)
+        .arg("a").optional.object
+            .arg("b").required.int
+            .end.build();
+
+        chai.expect(err).to.be.null;
+    });
 
     it ("Should fail with bad optional", () => {
         let arg = {

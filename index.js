@@ -1,3 +1,4 @@
+"use strict";
 const moment = require('moment');
 const EmailValidator = require('email-validator');
 
@@ -18,7 +19,7 @@ let isDef = (o) => {
 
 const array2set = (arr) => {
     let out = {};
-    for (name of arr) {
+    for (let name of arr) {
         out[name] = true;
     };
     return out;
@@ -145,7 +146,6 @@ const Validators = {
         switch (t) {
         case "boolean":
             return [null, v.value];
-            break;
         case "string":
             let flags = v._ignorecase ? "i" : "";
             if (new RegExp("^(true|false)$", flags).test(v.value)) {
@@ -438,7 +438,7 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
     }
 
     self.build = () => {
-        tmp = self.pre;
+        let tmp = self.pre;
         if (tmp) {
             while (tmp.pre !== null) {
                 tmp = tmp.pre;
@@ -542,7 +542,7 @@ let Compounder = function (parent) {
             throw new TypeError(`Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`);
         }
         let counter = 0;
-        for (name of names) {
+        for (let name of names) {
             ifArgSet(name);
             if (parent.args[name].wasSet) {
                 counter += 1;
@@ -559,7 +559,7 @@ let Compounder = function (parent) {
             throw new TypeError(`Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
         }
         let counter = 0;
-        for (name of names) {
+        for (let name of names) {
             ifArgSet(name);
             if (parent.args[name].wasSet) {
                 counter += 1;
@@ -581,7 +581,7 @@ let Compounder = function (parent) {
                 throw new TypeError(`Compounder error: allOrNothing compounder requires at least 2 arguments, but 1 found`);
             }
         }
-        for (name of names) {
+        for (let name of names) {
             ifArgSet(name);
             if (parent.gmap[name].wasSet) {
                 counter += 1;
@@ -746,7 +746,11 @@ let Variable = function (parent, name, value) {
                 data = args[0];
             } else if (typeof(args[0]) === 'object') {
                 data = Object.keys(args[0]);
-            }
+            } else if (typeof(args[0]) === 'string') {
+				data = [args[0]];
+			} else {
+				throw new TypeError("Type enum arguments must be either array, object or set of strings");
+			}
         } else {
             data = args;
         }
@@ -825,7 +829,7 @@ let Variable = function (parent, name, value) {
                 }
                 newSrc = {};
             }
-            if (self.omit === true) {
+            if (self.parent.omit === true) {
                 newOmit = true;
             }
             const tmp = self._as ? self._as : self.name;

@@ -3,6 +3,13 @@ const chai = require('chai'),
 	
 describe("Should test any validator", () => {
 	
+	it ("Should test omit pass through to child validator", () => {
+		let v = new Validator({
+			omit: true
+		});
+		let w = v.with({a: { b: "tmp" }}).arg("a").object;
+	});
+	
 	it ("Should throw on undefined source", () => {
 		let wasErr = false;
 		let arg = {

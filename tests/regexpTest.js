@@ -23,6 +23,25 @@ describe("Should test regexp validator", () => {
         chai.expect(options).not.to.be.null;
         chai.expect(options.a).to.equal("letter");
     });
+	
+	it ("Should test fail with undefined operator", () => {
+        let arg = {
+            a: "letter"
+        };
+        let [err, options] = new Validator()
+        .with(arg)
+        .arg("a").required.regular(/ett/i).build();
+
+        chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options.a).to.equal("letter");
+
+        [err, options] = new Validator()
+        .with(arg)
+        .arg("a").required.ofType('regexp').build();
+
+        chai.expect(err).not.to.be.null;
+    });
 
     it ("Should test invalid", () => {
         let arg = {
