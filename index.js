@@ -348,17 +348,11 @@ let Validator = function ({ base = null, src = null, pre = null, omit = false, g
     self.base = base;
     self.pre  = pre;
     self.omit = omit;
-    if (gmap === null) {
-        self.gmap = {};
-    } else {
-        self.gmap = gmap;
-    }
+    self.gmap = gmap || {};
 
     self.getBase = () => {
         return self.base;
     };
-
-    self.Validators = Validators;
 
     self.separator = globalOptions.separator;
 
@@ -652,7 +646,7 @@ let Variable = function (parent, name, value) {
     }
 
     self.ofType = (typeName) => {
-        if (typeof(typeName) === 'string' && self.parent.Validators.hasOwnProperty(typeName)) {
+        if (typeof(typeName) === 'string' && Validators.hasOwnProperty(typeName)) {
             self.type = typeName;
             return self;
         }
@@ -729,10 +723,10 @@ let Variable = function (parent, name, value) {
         return self;
     };
     self.func = (proc) => {
-		self.type = 'func';
-		if (typeof(proc) === 'function') {
-			self._operator = proc;
-		}
+        self.type = 'func';
+        if (typeof(proc) === 'function') {
+            self._operator = proc;
+        }
         return self;
     };
     self.format = (fmt) => {
@@ -747,10 +741,10 @@ let Variable = function (parent, name, value) {
             } else if (typeof(args[0]) === 'object') {
                 data = Object.keys(args[0]);
             } else if (typeof(args[0]) === 'string') {
-				data = [args[0]];
-			} else {
-				throw new TypeError("Type enum arguments must be either array, object or set of strings");
-			}
+                data = [args[0]];
+            } else {
+                throw new TypeError("Type enum arguments must be either array, object or set of strings");
+            }
         } else {
             data = args;
         }
@@ -852,7 +846,7 @@ let Variable = function (parent, name, value) {
     Object.defineProperty(self, 'fullName', {
         get: () => {
             const path = self.parent.getBase();
-            const tmp = self._as ? self.as : self.name;
+            const tmp = self._as ? self._as : self.name;
             if (path) {
                 return path + "." + tmp;
             }

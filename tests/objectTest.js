@@ -139,6 +139,67 @@ describe("Should test object validator", () => {
         console.log(options);
 
     });
+	
+	it ("Should test with rename", () => {
+        let arg = {
+			a: 100,
+			b: {
+				c: "street"
+			}
+		};
+
+		let [err, options] = new Validator()
+		.with(arg)
+		.arg('a').as('b').required.int
+		.arg('b').as('internals').object
+			.arg('c').as('q').required.string.build();
+				
+		chai.expect(err).to.be.null;
+		chai.expect(options).to.deep.equal({
+			b: 100,
+			internals: {
+				q: "street"
+			}
+		});
+    });
+	
+	it ("Should test rename", () => {
+		let arg = {
+			a: 100,
+			b: {
+				c: {
+					d: "100"
+				}
+			}
+		};
+
+		let v = new Validator()
+		.with(arg)
+		.arg('a').as('b').required.int
+		.arg('b').as('internals').required.object
+			.arg('c').as('q').required.object
+				.arg('d').as('q').required.string
+			.end
+		.end;
+		
+		let [err, options] = v.build();
+		
+		chai.expect(v.gmap).have.property('a');
+		chai.expect(v.gmap).have.property('b');
+		chai.expect(v.gmap).have.property('internals');
+		chai.expect(v.gmap).have.property('internals.c');
+		chai.expect(v.gmap).have.property('internals.q');
+
+		chai.expect(err).to.be.null;
+		chai.expect(options).to.deep.equal({
+			b: 100,
+			internals: {
+				q: {
+					q: "100"
+				}
+			}
+		});
+	});
 
 });
 
