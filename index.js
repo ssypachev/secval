@@ -808,10 +808,10 @@ let Variable = function (parent, name, value) {
             let base = self.parent.getBase(),
                 newSrc,
                 newOmit = false;
-            if (self._optional) {
+            if (self._optional && !isDef(self.value)) {
                 if (isDef(self._default)) {
                     self.value = self._default;
-                } else if (!isDef(self.value)) {
+                } else {
                     newOmit = true;
                 }
             }
@@ -846,7 +846,7 @@ let Variable = function (parent, name, value) {
     Object.defineProperty(self, 'fullName', {
         get: () => {
             const path = self.parent.getBase();
-            const tmp = self._as ? self._as : self.name;
+            const tmp = self._as || self.name;
             if (path) {
                 return path + "." + tmp;
             }
