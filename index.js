@@ -519,6 +519,12 @@ let Compounder = function (parent) {
             throw new TypeError(`Compounder error: named argument ${name} was not found in arguments list`);
         }
     }
+	
+	self.noMoreEqThanCount = (a, b, message) => {
+		if (a >= b) {
+            throw new TypeError(message);
+        }
+	}
 
     self.any = (...names) => {
         for (let name of names) {
@@ -532,9 +538,7 @@ let Compounder = function (parent) {
     }
 
     self.atLeast = (count, ...names) => {
-        if (count >= names.length) {
-            throw new TypeError(`Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`);
-        }
+		self.noMoreEqThanCount(count, names.length, `Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`);
         let counter = 0;
         for (let name of names) {
             ifArgSet(name);
@@ -549,9 +553,7 @@ let Compounder = function (parent) {
     }
 
     self.exact = (count, ...names) => {
-        if (count >= names.length) {
-            throw new TypeError(`Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
-        }
+		self.noMoreEqThanCount(count, names.length, `Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
         let counter = 0;
         for (let name of names) {
             ifArgSet(name);
