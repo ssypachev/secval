@@ -519,12 +519,6 @@ let Compounder = function (parent) {
             throw new TypeError(`Compounder error: named argument ${name} was not found in arguments list`);
         }
     }
-	
-	self.noMoreEqThanCount = (a, b, message) => {
-		if (a >= b) {
-            throw new TypeError(message);
-        }
-	}
 
     self.any = (...names) => {
         for (let name of names) {
@@ -536,36 +530,39 @@ let Compounder = function (parent) {
         setError(checkMsg(self, `Any one of arguments ${names.join(', ')} must be defined`));
         return self;
     }
+	
+	self.wrongNumberOfArguments = (cmp, msg1, msg2) => {
+		return (count, ...names) => {
+			if (count >= names.length) {
+				throw new TypeError(msg1);
+			}
+			let counter = 0;
+			for (let name of names) {
+				ifArgSet(name);
+				if (parent.args[name].wasSet) {
+					counter += 1;
+				}
+			}
+			if (cmp(counter, count)) {
+				setError(checkMsg(self, msg2(counter, count, names)));
+			}
+			return self;
+		}
+	}
+	
+	self.atLeast = self.wrongNumberOfArguments((counter, count) => { return counter < count; }, 
+		`Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`,
+		(counter, count, names) => {
+			return `At least ${counter} name in ${names.join(', ')} must be defined, but ${count} found`;
+		}
+	);
 
-    self.atLeast = (count, ...names) => {
-		self.noMoreEqThanCount(count, names.length, `Compounder error: if atLeast(count, names...) compounder used, then count argument must be less than number of names`);
-        let counter = 0;
-        for (let name of names) {
-            ifArgSet(name);
-            if (parent.args[name].wasSet) {
-                counter += 1;
-            }
-        }
-        if (counter < count) {
-            setError(checkMsg(self, `At least ${count} name in ${names.join(', ')} must be defined, but ${count} found`));
-        }
-        return self;
-    }
-
-    self.exact = (count, ...names) => {
-		self.noMoreEqThanCount(count, names.length, `Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`);
-        let counter = 0;
-        for (let name of names) {
-            ifArgSet(name);
-            if (parent.args[name].wasSet) {
-                counter += 1;
-            }
-        }
-        if (counter !== count) {
-            setError(checkMsg(self, `At least ${count} name in ${names.join(', ')} must be defined, but ${count} found`));
-        }
-        return self;
-    }
+	self.exact = self.wrongNumberOfArguments((counter, count) => { return counter !== count; },
+		`Compounder error: if exact(count, names...) compounder used, then count argument must be less than number of names`,
+		(counter, count, names) => {
+			return `At least ${counter} name in ${names.join(', ')} must be defined, but ${count} found`;
+		}
+	);
 
     self.allOrNothing = (...names) => {
         let len = names.length,
