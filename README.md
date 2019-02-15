@@ -1,6 +1,4 @@
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-
-[![Codecov Coverage](https://img.shields.io/codecov/c/github/ssypachev/secval/master.svg?style=flat-square)](https://codecov.io/gh/ssypachev/secval/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![Codecov Coverage](https://img.shields.io/codecov/c/github/ssypachev/secval/master.svg?style=flat-square)](https://codecov.io/gh/ssypachev/secval/)
 
 ## SecVal - typed argument validator _primarily_ for Express JS Framework.
 
