@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "mocha tests",
-    "cover": "nyc mocha tests"
+    "cover": "nyc mocha tests",
+    "format": "prettier index.js --write"
   },
   "keywords": "typed, parameter, validation, expressjs",
   "author": "",
@@ -18,6 +19,7 @@
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
+    "prettier": "^1.16.4",
     "uuid": "3.3.2"
   },
   "dependencies": {
