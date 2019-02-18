@@ -1,8 +1,8 @@
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![Codecov Coverage](https://img.shields.io/codecov/c/github/ssypachev/secval/master.svg?style=flat-square)](https://codecov.io/gh/ssypachev/secval/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) [![Codecov Coverage](https://img.shields.io/codecov/c/github/ssypachev/secval/master.svg?style=flat-square)](https://codecov.io/gh/ssypachev/secval/) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 ## SecVal - typed argument validator _primarily_ for Express JS Framework.
 
-This library in beta, though is used in production projects. Main idea is to provide way to validate 
+This library in beta, though is used in production projects. Main idea is to provide way to validate
 input arguments and return typed arguments, errors and warnings.
 
 Example of usage:
@@ -18,9 +18,9 @@ app.post('/users', async (req, res) => {
         .arg('location').optional.object
             .arg('latitude').optional.float
             .arg('longitude').optional.float
-		.end
+        .end
         .compound.allOrNothing('location.latitude', 'location.longitude')
-		.build();
+        .build();
 
     if (err) {
         res.status(400).send({ error: err });
@@ -79,6 +79,27 @@ https://github.com/ssypachev/secval/wiki
 
 ## Dependencies and testing
 
-Library depends on `moment.js` and `email-validator`. For testing `mocha`, `chai` and `uuid` is used. To test call
+Library depends on `moment.js` and `email-validator`. For testing `mocha`, `chai`, `uuid`, `nyc` and `prettier` is used. To test call
 
 `npm run test`
+
+To cover with nyc
+
+`npm run cover`
+
+To format
+
+`npm run format`
+
+
+
+
+
+
+
+
+
+
+
+
+
