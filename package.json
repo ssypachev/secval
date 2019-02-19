@@ -10,7 +10,7 @@
   "scripts": {
     "test": "mocha tests",
     "cover": "nyc mocha tests",
-    "format": "prettier index.js --write"
+    "format": "prettier index.js tests/* --write"
   },
   "keywords": "typed, parameter, validation, expressjs",
   "author": "",

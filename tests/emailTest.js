@@ -1,88 +1,73 @@
 const chai = require('chai'),
-	{ Validator } = require('../index.js');
-	
-describe("Should test email validator", () => {
-	
-	it ("Should test valid", () => {
-		let arg = {
-			a: 'test@mail.com'
-		};
+    { Validator } = require('../index.js');
 
-		let [err, options] = new Validator()
-		.with(arg)
-		.arg('a').required.email.build();
-		
-		chai.expect(options.a).to.equal('test@mail.com');
-		chai.expect(err).to.be.null;
-	});
-	
-	it ("Should test invalid", () => {
-		let arg = {
-			a: 'local-ends-with-dot.@sld.com'
-		};
+describe('Should test email validator', () => {
+    it('Should test valid', () => {
+        let arg = {
+            a: 'test@mail.com',
+        };
 
-		let [err, options] = new Validator()
-		.with(arg)
-		.arg('a').required.email.build();
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.email.build();
 
-		chai.expect(err).not.to.be.null;
-	});
-	
-	it ("Should test invalid string", () => {
-		let arg = {
-			a: 'testtest@mail.com'
-		};
+        chai.expect(options.a).to.equal('test@mail.com');
+        chai.expect(err).to.be.null;
+    });
 
-		let [err, options] = new Validator()
-		.with(arg)
-		.arg('a').required.email.max(10).build();
+    it('Should test invalid', () => {
+        let arg = {
+            a: 'local-ends-with-dot.@sld.com',
+        };
 
-		chai.expect(err).not.to.be.null;
-	});
-	
-	it ("Should use string pre-processing", () => {
-		let arg = {
-			a: ' test@mail.com '
-		};
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.email.build();
 
-		let [err, options] = new Validator()
-		.with(arg)
-		.arg('a').required.email.trim.build();
-		
-		chai.expect(options.a).to.equal('test@mail.com');
-		chai.expect(err).to.be.null;
-	});
-	
-	it ("Should use string post-processing", () => {
-		let arg = {
-			a: 'test@mail.com'
-		};
+        chai.expect(err).not.to.be.null;
+    });
 
-		let [err, options] = new Validator()
-		.with(arg)
-		.arg('a').required.email.toUpperCase.build();
-		
-		chai.expect(options.a).to.equal('TEST@MAIL.COM');
-		chai.expect(err).to.be.null;
-	});
-	
+    it('Should test invalid string', () => {
+        let arg = {
+            a: 'testtest@mail.com',
+        };
+
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.email.max(10)
+            .build();
+
+        chai.expect(err).not.to.be.null;
+    });
+
+    it('Should use string pre-processing', () => {
+        let arg = {
+            a: ' test@mail.com ',
+        };
+
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.email.trim.build();
+
+        chai.expect(options.a).to.equal('test@mail.com');
+        chai.expect(err).to.be.null;
+    });
+
+    it('Should use string post-processing', () => {
+        let arg = {
+            a: 'test@mail.com',
+        };
+
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.email.toUpperCase.build();
+
+        chai.expect(options.a).to.equal('TEST@MAIL.COM');
+        chai.expect(err).to.be.null;
+    });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
