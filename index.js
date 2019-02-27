@@ -1,6 +1,7 @@
 'use strict';
 const moment = require('moment');
 const EmailValidator = require('email-validator');
+const PhoneValidator = require('phone');
 
 const checkMsg = (v, stdMsg) => {
     if (v._message) {
@@ -416,6 +417,18 @@ const Validators = {
         }
         return [null, v.value];
     },
+	phone (v) {
+		let val;
+		if (v._country) {
+			val = PhoneValidator(v.value, v._country);
+		} else {
+			val = PhoneValidator(v.value);
+		}
+		if (val.length === 0) {
+			return [checkMsg(v, `Parameter ${v.fullName} must be valid phone`)];
+		}
+		return [null, val[0]];
+	}
 };
 
 let Validator = function({ base = null, src = null, pre = null, omit = false, gmap = null } = {}) {
@@ -857,6 +870,10 @@ let Variable = function(parent, name, value) {
         }
         return self;
     };
+	self.country = (alpha3) => {
+		self._country = alpha3;
+		return self;
+	};
 
     Object.defineProperty(self, 'compound', {
         get: () => {
