@@ -419,15 +419,23 @@ const Validators = {
     },
 	phone (v) {
 		let val;
-		if (v._country) {
-			val = PhoneValidator(v.value, v._country);
+		if (v._strict) {
+			if (v._country) {
+				val = PhoneValidator(v.value, v._country);
+			} else {
+				val = PhoneValidator(v.value);
+			}
+			if (val.length === 0) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be valid phone`)];
+			}
+			return [null, val[0]];
 		} else {
-			val = PhoneValidator(v.value);
+			val = v.value.match(/\d+/g).map(Number).join('');
+			if (!/^[0-9]{11}$/.test(val)) {
+				return [checkMsg(v, `Parameter ${v.fullName} must be valid phone`)];
+			}
+			return [null, val];
 		}
-		if (val.length === 0) {
-			return [checkMsg(v, `Parameter ${v.fullName} must be valid phone`)];
-		}
-		return [null, val[0]];
 	}
 };
 
