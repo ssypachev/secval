@@ -121,7 +121,7 @@ const Validators = {
         if (v._trim) {
             val = val.trim();
         }
-        if (v._min && val.length < v._min) {
+        if (isDef(v._min) && val.length < v._min) {
             return [
                 checkMsg(
                     v,
@@ -129,7 +129,7 @@ const Validators = {
                 ),
             ];
         }
-        if (v._max && val.length > v._max) {
+        if (isDef(v._max) && val.length > v._max) {
             return [
                 checkMsg(
                     v,
@@ -231,7 +231,7 @@ const Validators = {
                 ),
             ];
         }
-        if (v._min && val.length < v._min) {
+        if (isDef(v._min) && val.length < v._min) {
             return [
                 checkMsg(
                     v,
@@ -239,7 +239,7 @@ const Validators = {
                 ),
             ];
         }
-        if (v._max && val.length > v._max) {
+        if (isDef(v._max) && val.length > v._max) {
             return [
                 checkMsg(
                     v,
@@ -289,7 +289,7 @@ const Validators = {
         }
 
         const m = moment(v.value, fmt, strict);
-        if (v._min) {
+        if (isDef(v._min)) {
             const tmin = moment(v._min, fmt, strict);
             if (m.isBefore(tmin)) {
                 return [
@@ -297,7 +297,7 @@ const Validators = {
                 ];
             }
         }
-        if (v._max) {
+        if (isDef(v._max)) {
             const tmax = moment(v._max, fmt, strict);
             if (m.isAfter(tmax)) {
                 return [
