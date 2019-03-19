@@ -105,10 +105,10 @@ const Validators = {
             return [checkMsg(v, `Parameter ${v.fullName} must be float, but ${v.value} found`)];
         }
         v.value = parseFloat(v.value);
-        if (v._min && v.value < v._min) {
+        if (isDef(v._min) && v.value < v._min) {
             return [checkMsg(v, `Parameter ${v.fullName} must be greater than ${v._min}, but ${v.value} found`)];
         }
-        if (v._max && v.value > v._max) {
+        if (isDef(v._max) && v.value > v._max) {
             return [checkMsg(v, `Parameter ${v.fullName} must be less than ${v._max}, but ${v.value} found`)];
         }
         return [null, v.value];

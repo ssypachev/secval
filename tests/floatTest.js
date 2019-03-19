@@ -167,6 +167,21 @@ describe('Should test float validator', () => {
         chai.expect(err).not.to.be.null;
         chai.expect(options).to.be.null;
     });
+	
+	it('Should test float, min with 0 value', () => {
+        let arg = {
+            a: -3,
+        };
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.ofType('float')
+            .min(0)
+            .build();
+
+        chai.expect(err).not.to.be.null;
+        chai.expect(options).to.be.null;
+    });
 
     it('Should test float, between', () => {
         let arg = {
