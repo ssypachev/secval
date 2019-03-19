@@ -161,6 +161,22 @@ describe('Should test int validator', () => {
         console.log(err);
         chai.expect(options).to.be.null;
     });
+	
+	it('Should test valid int, min 0, required', () => {
+        let arg = {
+            a: -3,
+        };
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .required.ofType('int')
+            .min(0)
+            .build();
+
+        chai.expect(err).not.to.be.null;
+        chai.expect(options).to.be.null;
+    });
+
 
     it('Should test valid int, min, required', () => {
         let arg = {
