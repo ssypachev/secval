@@ -2,6 +2,20 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe('Should test enum validator', () => {
+	
+	 it('Should test default value', () => {
+        let arg = {};
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .optional.enumeration('a', 'b', 'c').default('c')
+            .build();
+
+        chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options.a).to.equal('c');
+    });
+	
     it('Should fail on undefined operator', () => {
         let arg = {
             a: 'a',
