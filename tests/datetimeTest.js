@@ -3,6 +3,24 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe('Should test datetime validator', () => {
+	
+	it ('Should test output', () => {
+		let arg = {
+            d: '2018-04-04 00:11:22',
+        };
+        let [err, options] = new Validator()
+            .with(arg)
+            .arg('d')
+            .datetime
+			.output('YYYY-MM-DD 11:11:11')
+			.build();
+		chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options).to.have.property('d');
+        chai.expect(options.d).to.be.a('string');
+        chai.expect(options.d).to.equal('2018-04-04 11:11:11');
+	});
+	
     it('Should return moment object', () => {
         let arg = {
             d: '2018-04-04 00:11:22',

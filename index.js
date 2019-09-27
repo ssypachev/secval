@@ -308,6 +308,9 @@ const Validators = {
         if (v._js) {
             return [null, m.toDate()];
         }
+		if (v._output) {
+			return [null, m.format(v._output)];
+		}
         return [null, m];
     },
     email(v) {
@@ -813,6 +816,10 @@ let Variable = function(parent, name, value) {
         self._max = b;
         return self;
     };
+	self.output = (b) => {
+		self._output = b;
+		return self;
+	}
     self.func = (proc) => {
         self.type = 'func';
         if (typeof proc === 'function') {
