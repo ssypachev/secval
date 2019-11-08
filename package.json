@@ -12,7 +12,7 @@
     "cover": "nyc mocha tests",
     "format": "prettier index.js tests/* --write"
   },
-  "keywords": "typed, parameter, validation, expressjs",
+  "keywords": ["typed", "parameter", "validation", "expressjs"],
   "author": "",
   "license": "ISC",
   "devDependencies": {
