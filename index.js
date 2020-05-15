@@ -530,6 +530,13 @@ let Validator = function({ base = null, src = null, pre = null, omit = false, gm
     };
 
     self.setOption = function(v, result) {
+		if (v._but) {
+			for (let b of v._but) {
+				if (b.variants.includes(v.value)) {
+					result = b.into;
+				}
+			}
+		}
         self.options[v._as ? v._as : v.name] = result;
     };
 
@@ -545,7 +552,6 @@ let Validator = function({ base = null, src = null, pre = null, omit = false, gm
             }
             return;
         }
-
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
                 if (isDef(v._default)) {
@@ -792,6 +798,16 @@ let Variable = function(parent, name, value) {
             return self;
         };
     });
+	self.but = (a, b) => {
+		if (!self._but) {
+			self._but = [];
+		}
+		self._but.push({
+			variants: (Array.isArray(a) ? a: [a]),
+			into: b
+		});
+		return self;
+	};
     self.between = (a, b) => {
         if (a >= b) {
             throw new TypeError(
