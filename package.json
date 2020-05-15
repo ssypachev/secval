@@ -1,6 +1,6 @@
 {
   "name": "secval",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "description": "",
   "main": "index.js",
   "repository": "https://github.com/ssypachev/secval/wiki",
@@ -12,7 +12,12 @@
     "cover": "nyc mocha tests",
     "format": "prettier index.js tests/* --write"
   },
-  "keywords": ["typed", "parameter", "validation", "expressjs"],
+  "keywords": [
+    "typed",
+    "parameter",
+    "validation",
+    "expressjs"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
