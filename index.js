@@ -553,10 +553,10 @@ let Validator = function({ base = null, src = null, pre = null, omit = false, gm
             return;
         }
 		if (v.type === 'bool' && v._flag) {
-			if (v.value === null) {
-				[err, result] = [null, true];
+			if (v.value === undefined) {
+				v.value = false;
 			} else {
-				[err, result] = [null, false];
+				v.value = true;
 			}
 		}
         if (v._optional) {

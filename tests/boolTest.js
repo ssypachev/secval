@@ -39,6 +39,18 @@ describe('Should test boolean validator', () => {
         chai.expect(options).to.have.property('a', true);
 	});
 	
+	it ('Should test flag option empty string, true', () => {
+		let arg = { a: '' };
+		let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .optional.ofType('bool').flag
+            .build();
+		chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options).to.have.property('a', true);
+	});
+	
     it('Should test valid bool, simple, required', () => {
         let arg = {
             a: true,
