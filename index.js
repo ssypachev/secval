@@ -552,6 +552,13 @@ let Validator = function({ base = null, src = null, pre = null, omit = false, gm
             }
             return;
         }
+		if (v.type === 'bool' && v._flag) {
+			if (v.value === null) {
+				[err, result] = [null, true];
+			} else {
+				[err, result] = [null, false];
+			}
+		}
         if (v._optional) {
             if (v.value === null || v.value === undefined) {
                 if (isDef(v._default)) {
@@ -903,6 +910,7 @@ let Variable = function(parent, name, value) {
         'toComma',
         'padEnd',
         'cropEnd',
+		'flag',
         'v1',
         'v3',
         'v4',

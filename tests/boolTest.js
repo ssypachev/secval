@@ -2,6 +2,43 @@ const chai = require('chai'),
     { Validator } = require('../index.js');
 
 describe('Should test boolean validator', () => {
+	
+	it ('Should test flag option, false', () => {
+		let arg = {};
+		let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .optional.ofType('bool').flag
+            .build();
+		chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options).to.have.property('a', false);
+	});
+	
+	it ('Should test flag option, true', () => {
+		let arg = { a: null };
+		let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .optional.ofType('bool').flag
+            .build();
+		chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options).to.have.property('a', true);
+	});
+	
+	it ('Should test flag option, true', () => {
+		let arg = { a: true };
+		let [err, options] = new Validator()
+            .with(arg)
+            .arg('a')
+            .optional.ofType('bool').flag
+            .build();
+		chai.expect(err).to.be.null;
+        chai.expect(options).not.to.be.null;
+        chai.expect(options).to.have.property('a', true);
+	});
+	
     it('Should test valid bool, simple, required', () => {
         let arg = {
             a: true,
